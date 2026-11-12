@@ -1,0 +1,12 @@
+alphabetic:
+  phone:
+    landscape: "alphabeticLandscape"
+    portrait: "alphabeticPortrait"
+numeric:
+  phone:
+    landscape: "landscapeNumeric"
+    portrait: "portraitNumeric"
+pinyin:
+  phone:
+    landscape: "landscapePinyin"
+    portrait: "portraitPinyin"
