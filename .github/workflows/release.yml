@@ -1,0 +1,73 @@
+name: Build T9-TWO skin
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: t9-two-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package .cskin
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf dist
+          mkdir -p dist/T9-TWO
+
+          # 只打包皮肤需要的文件，避免把 .github、.gitattributes 等带进 cskin
+          for item in config.yaml demo.png README.md dark light jsonnet; do
+            if [ -e "$item" ]; then
+              cp -R "$item" dist/T9-TWO/
+            fi
+          done
+
+          test -f dist/T9-TWO/config.yaml
+          test -d dist/T9-TWO/dark
+          test -d dist/T9-TWO/light
+
+          # cskin 必须是 zip，且顶层文件夹名就是皮肤名
+          (cd dist && zip -r -9 T9-TWO.cskin T9-TWO)
+          unzip -l dist/T9-TWO.cskin
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: T9-TWO-cskin
+          path: dist/T9-TWO.cskin
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # 推送到 main 时更新 rolling 的 latest release；
+          # 推送 v* tag 时创建对应版本 release。
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'T9-TWO 最新构建' }}
+          body: |
+            T9-TWO 九键皮肤（自动构建）
+
+            下载 `T9-TWO.cskin`，分享到元书 App 导入即可。
+
+            - 需要元书 1.6.0 或更高版本
+            - 输入方案请选择「中文九键」
+            - 皮肤名称：T9-TWO
+          files: dist/T9-TWO.cskin
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
