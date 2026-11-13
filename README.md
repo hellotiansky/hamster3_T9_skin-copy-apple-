@@ -2,6 +2,8 @@
 
 基于元书内置 T9 键盘（作者 Morse）修改的九键皮肤。
 整体参考 iOS 17.6 原生九键布局，并针对日常输入做了调整。
+---
+![demo](https://github.com/hellotiansky/hamster3_T9_skin-copy-apple-/blob/main/demo.png)
 
 ## 与官方原始 T9 的主要区别
 
