@@ -30,10 +30,24 @@ local t9KeyRowStyleName = 't9KeyRowStyle';
 local t9BottomLeftStyleName = 't9BottomLeftStyle';
 local t9BottomCenterStyleName = 't9BottomCenterStyle';
 local t9BottomRightStyleName = 't9BottomRightStyle';
+local t9PinyinDividerRowStyleName = 't9PinyinDividerRowStyle';
+local t9PinyinDividerName = 't9PinyinDivider';
+local t9PinyinDividerBackgroundStyleName = 't9PinyinDividerBackgroundStyle';
+local t9PinyinDividerSpacerRowStyleName = 't9PinyinDividerSpacerRowStyle';
+local t9PinyinDividerSpacerName = 't9PinyinDividerSpacer';
+local t9PinyinDividerSpacerBackgroundStyleName = 't9PinyinDividerSpacerBackgroundStyle';
 
 local t9RowStyles(isPortrait) = {
   [t9PinyinRowStyleName]: {
     size: { height: if isPortrait then 28 else 24 },
+  },
+  [t9PinyinDividerRowStyleName]: {
+    // 拼音栏与候选词栏之间的细分隔线，始终显示
+    size: { height: 0.5 },
+  },
+  [t9PinyinDividerSpacerRowStyleName]: {
+    // 分隔线与候选词背景色块之间的间距
+    size: { height: 4 },
   },
   [t9KeyRowStyleName]: {
     size: { height: if isPortrait then 54 else 40 },
@@ -303,6 +317,24 @@ local newKeyLayout(isDark=false, isPortrait=true) =
         normalColor: colors.standardButtonForegroundColor,
         fontSize: if isPortrait then 20 else 17,
       }, isDark),
+      // 拼音栏与候选词栏之间的分割线，常态下也显示
+      [t9PinyinDividerName]: {
+        action: 'none',
+        backgroundStyle: t9PinyinDividerBackgroundStyleName,
+      },
+      [t9PinyinDividerBackgroundStyleName]: utils.newGeometryStyle({
+        normalColor: colors.labelColor.tertiary,
+        highlightColor: colors.labelColor.tertiary,
+      }, isDark),
+      // 分隔线与候选词区域之间的透明间距
+      [t9PinyinDividerSpacerName]: {
+        action: 'none',
+        backgroundStyle: t9PinyinDividerSpacerBackgroundStyleName,
+      },
+      [t9PinyinDividerSpacerBackgroundStyleName]: utils.newGeometryStyle({
+        normalColor: '#00000000',
+        highlightColor: '#00000000',
+      }, isDark),
       // 拼音栏较窄、候选词栏较高，贴近 iOS 的「上窄下宽」
       toolbarHeight: if isPortrait then 78 else 70,
       horizontalCandidateStyle: t9Toolbar.horizontalCandidateStyle {
@@ -318,6 +350,26 @@ local newKeyLayout(isDark=false, isPortrait=true) =
                   subviews: [
                     {
                       Cell: params.keyboard.t9HorizontalSymbolsCollection.name,
+                    },
+                  ],
+                },
+              },
+              {
+                HStack: {
+                  style: t9PinyinDividerRowStyleName,
+                  subviews: [
+                    {
+                      Cell: t9PinyinDividerName,
+                    },
+                  ],
+                },
+              },
+              {
+                HStack: {
+                  style: t9PinyinDividerSpacerRowStyleName,
+                  subviews: [
+                    {
+                      Cell: t9PinyinDividerSpacerName,
                     },
                   ],
                 },

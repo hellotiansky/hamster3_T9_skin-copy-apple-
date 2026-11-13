@@ -19,6 +19,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # 拉取完整历史，发布说明需要读取推送包含的提交记录
+          fetch-depth: 0
 
       - name: Package .cskin
         shell: bash
@@ -50,6 +53,75 @@ jobs:
           path: dist/T9-TWO.cskin
           if-no-files-found: error
 
+      - name: Generate release notes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+          TARGET_SHA: ${{ github.sha }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          notes="dist/release-notes.md"
+          target="${AFTER_SHA:-$TARGET_SHA}"
+          range=""
+
+          # 版本 tag：列出上一个 tag 到当前 tag 之间的提交
+          if [ "$REF_TYPE" = "tag" ]; then
+            prev_tag="$(git describe --tags --abbrev=0 "${REF_NAME}^" 2>/dev/null || true)"
+            if [ -n "$prev_tag" ] && [ "$prev_tag" != "$REF_NAME" ]; then
+              range="${prev_tag}..${REF_NAME}"
+            fi
+          # 推送 main：列出本次推送包含的提交
+          elif [ "$EVENT_NAME" = "push" ] && [ -n "$BEFORE_SHA" ] \
+            && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            range="${BEFORE_SHA}..${target}"
+          fi
+
+          log_format='- [%h]('"${REPO_URL}"'/commit/%H) %s'
+          changelog=""
+
+          if [ -n "$range" ]; then
+            changelog="$(git log --pretty=format:"$log_format" --no-merges "$range" 2>/dev/null || true)"
+            # 只有合并提交时，退回到包含合并提交的记录
+            if [ -z "$changelog" ]; then
+              changelog="$(git log --pretty=format:"$log_format" "$range" 2>/dev/null || true)"
+            fi
+          fi
+
+          # 手动触发、首次推送或无法比对历史时，列出最近 20 条提交
+          if [ -z "$changelog" ]; then
+            changelog="$(git log -20 --pretty=format:"$log_format" "$target" 2>/dev/null || true)"
+          fi
+
+          if [ -z "$changelog" ]; then
+            changelog="- 本次推送没有新的提交记录"
+          fi
+
+          {
+            echo "T9-TWO 九键皮肤（自动构建）"
+            echo ""
+            echo "下载 \`T9-TWO.cskin\`，分享到元书 App 导入即可。"
+            echo ""
+            echo "- 需要元书 1.6.0 或更高版本"
+            echo "- 输入方案请选择「中文九键」"
+            echo "- 皮肤名称：T9-TWO"
+            echo ""
+            echo "## 本次更新"
+            echo ""
+            printf '%s\n' "$changelog"
+            echo ""
+            echo "---"
+            echo ""
+            echo "提交记录：${REPO_URL}/commits/${REF_NAME}"
+          } > "$notes"
+
+          cat "$notes"
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -57,14 +129,8 @@ jobs:
           # 推送 v* tag 时创建对应版本 release。
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
           name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'T9-TWO 最新构建' }}
-          body: |
-            T9-TWO 九键皮肤（自动构建）
-
-            下载 `T9-TWO.cskin`，分享到元书 App 导入即可。
-
-            - 需要元书 1.6.0 或更高版本
-            - 输入方案请选择「中文九键」
-            - 皮肤名称：T9-TWO
+          # 发布说明由上一步根据本次推送的提交记录生成
+          body_path: dist/release-notes.md
           files: dist/T9-TWO.cskin
           fail_on_unmatched_files: true
           overwrite_files: true

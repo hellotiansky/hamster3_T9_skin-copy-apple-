@@ -245,7 +245,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'j' },
         uppercasedStateAction: { symbol: 'J' },
-        swipeUpAction: { symbol: '~' },
+        swipeUpAction: { symbol: "'" },
       },
     },
     kButton: {
@@ -280,7 +280,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'x' },
         uppercasedStateAction: { symbol: 'X' },
-        swipeUpAction: { symbol: "'" },
+        swipeUpAction: { symbol: '~' },
       },
     },
     cButton: {
@@ -574,7 +574,7 @@ local fonts = import 'Fonts.libsonnet';
       name: 'symbolicButton',
       params: {
         action: { keyboardType: 'symbolic' },
-        text: '#+=',
+        text: '#@¥',
       },
     },
 

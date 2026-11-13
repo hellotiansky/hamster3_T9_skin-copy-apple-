@@ -564,21 +564,21 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     isDark,
     params.keyboard.jButton.params {
       hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.tildeButton.name + 'SwipeUpHintForegroundStyle',
+        swipeUpForegroundStyle: params.keyboard.apostropheButton.name + 'SwipeUpHintForegroundStyle',
       },
     }
     + {
       foregroundStyleName: [
         params.keyboard.jButton.name + 'ForegroundStyle',
-        params.keyboard.tildeButton.name + 'BadgeForegroundStyle',
+        params.keyboard.apostropheButton.name + 'BadgeForegroundStyle',
       ],
     }
     + {
       foregroundStyle:
         createButtonForegroundStyle(isDark, params.keyboard.jButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.tildeButton),
+        + createTopBadgeForegroundStyle(isDark, params.keyboard.apostropheButton),
     }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.tildeButton)
+  ) + createSwipeUpHintStyle(isDark, params.keyboard.apostropheButton)
 
   + basicStyle.newAlphabeticButton(
     params.keyboard.kButton.name,
@@ -710,21 +710,21 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     isDark,
     params.keyboard.xButton.params {
       hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.apostropheButton.name + 'SwipeUpHintForegroundStyle',
+        swipeUpForegroundStyle: params.keyboard.tildeButton.name + 'SwipeUpHintForegroundStyle',
       },
     }
     + {
       foregroundStyleName: [
         params.keyboard.xButton.name + 'ForegroundStyle',
-        params.keyboard.apostropheButton.name + 'BadgeForegroundStyle',
+        params.keyboard.tildeButton.name + 'BadgeForegroundStyle',
       ],
     }
     + {
       foregroundStyle:
         createButtonForegroundStyle(isDark, params.keyboard.xButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.apostropheButton),
+        + createTopBadgeForegroundStyle(isDark, params.keyboard.tildeButton),
     }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.apostropheButton)
+  ) + createSwipeUpHintStyle(isDark, params.keyboard.tildeButton)
 
 
   + basicStyle.newAlphabeticButton(
