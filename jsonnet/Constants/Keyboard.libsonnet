@@ -87,8 +87,8 @@ local fonts = import 'Fonts.libsonnet';
   keyboard: {
     height: {
       iPhone: {
-        portrait: 216,  // 54 * 4
-        landscape: 160,  // 40 * 4
+        portrait: 222,  // 55.5 * 4
+        landscape: 164,  // 41 * 4
       },
       iPad: {
         portrait: 311,  // 64 * 4 + 55

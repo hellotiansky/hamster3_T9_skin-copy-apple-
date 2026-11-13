@@ -39,7 +39,7 @@ local t9PinyinDividerSpacerBackgroundStyleName = 't9PinyinDividerSpacerBackgroun
 
 local t9RowStyles(isPortrait) = {
   [t9PinyinRowStyleName]: {
-    size: { height: if isPortrait then 28 else 24 },
+    size: { height: if isPortrait then 29.5 else 25.5 },
   },
   [t9PinyinDividerRowStyleName]: {
     // 拼音栏与候选词栏之间的细分隔线，始终显示
@@ -50,7 +50,7 @@ local t9RowStyles(isPortrait) = {
     size: { height: 4 },
   },
   [t9KeyRowStyleName]: {
-    size: { height: if isPortrait then 54 else 40 },
+    size: { height: if isPortrait then 55.5 else 41 },
   },
   [t9BottomLeftStyleName]: {
     size: { width: { percentage: 0.2 } },
@@ -336,7 +336,7 @@ local newKeyLayout(isDark=false, isPortrait=true) =
         highlightColor: '#00000000',
       }, isDark),
       // 拼音栏较窄、候选词栏较高，贴近 iOS 的「上窄下宽」
-      toolbarHeight: if isPortrait then 78 else 70,
+      toolbarHeight: if isPortrait then 80 else 72,
       horizontalCandidateStyle: t9Toolbar.horizontalCandidateStyle {
         textFontSize: t9CandidateTextFontSize,
       },

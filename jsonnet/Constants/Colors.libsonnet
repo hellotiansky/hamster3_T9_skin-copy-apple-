@@ -24,9 +24,9 @@ local separatorColor = {
   dark: '#38383A',
 };
 
-// 键盘背景色 03 表示 0.01 的透明度
+// 键盘背景色（浅色使用苹果键盘的灰色，深色保持原来的透明效果）
 local keyboardBackgroundColor = {
-  light: '#ffffff03',
+  light: '#D0D3DA',
   dark: '#00000003',
 };
 
@@ -55,12 +55,12 @@ local standardButtonShadowColor = {
 
 // 系统按键（如回车、删除等）背景颜色
 local systemButtonBackgroundColor = {
-  light: '#E6E6E6',
+  light: '#A9AFBB',
   dark: '#4C4C4C',
 };
 
 local systemButtonHighlightedBackgroundColor = {
-  light: '#FFFFFF',
+  light: '#C3C8D1',
   dark: '#707070',
 };
 
@@ -74,7 +74,11 @@ local blueButtonBackgroundColor = {
   dark: '#0A84FF',
 };
 
-local blueButtonHighlightedBackgroundColor = systemButtonHighlightedBackgroundColor;
+// 蓝色按键按下时的背景色（保持原来的浅色高亮，不跟随系统按键）
+local blueButtonHighlightedBackgroundColor = {
+  light: '#FFFFFF',
+  dark: '#707070',
+};
 
 local blueButtonForegroundColor = {
   light: '#FFFFFF',
@@ -88,13 +92,13 @@ local blueButtonHighlightedForegroundColor = {
 
 // 按键底部边缘颜色
 local lowerEdgeOfButtonNormalColor = {
-  light: '#898A8D',
+  light: '#88898D',
   dark: '#000000',
 };
 
 // 按下状态下，按键底部边缘颜色
 local lowerEdgeOfButtonHighlightColor = {
-  light: '#898A8D',
+  light: '#88898D',
   dark: '#000000',
 };
 
@@ -128,7 +132,10 @@ local toolbarButtonForegroundColor = standardButtonForegroundColor;
 local toolbarButtonHighlightedForegroundColor = standardButtonForegroundColor;
 
 // 候选字亮候选字背景颜色
-local candidateHighlightColor = standardButtonBackgroundColor;
+local candidateHighlightColor = {
+  light: '#F7F8FA',
+  dark: standardButtonBackgroundColor.dark,
+};
 local candidateForegroundColor = standardButtonForegroundColor;
 
 // 候选字分隔线颜色
