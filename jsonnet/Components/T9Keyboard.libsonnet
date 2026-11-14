@@ -245,12 +245,13 @@ local newKeyLayout(isDark=false, isPortrait=true) =
   + t9Button(isDark, params.keyboard.t9NineButton, params.keyboard.nineButton, t9FontSize)
 
   // 左侧列 / 右侧列
-  + basicStyle.newSystemButton(
+  + basicStyle.newAlphabeticButton(
     params.keyboard.t9ZeroButton.name,
     isDark,
     {
       size: { width: '1/3' },
-    } + params.keyboard.t9ZeroButton.params
+    } + params.keyboard.t9ZeroButton.params,
+    needHint=false
   )
   + basicStyle.newSystemButton(
     params.keyboard.symbolicButton.name,
@@ -275,7 +276,13 @@ local newKeyLayout(isDark=false, isPortrait=true) =
   + basicStyle.newSystemButton(
     params.keyboard.t9ConfirmButton.name,
     isDark,
-    params.keyboard.t9ConfirmButton.params,
+    params.keyboard.t9ConfirmButton.params {
+      notification:
+        if isDark then
+          ['returnKeyTypeChangedNotification']
+        else
+          ['returnKeyTypeChangedNotification', 't9ConfirmBlueNotification'],
+    },
   )
 
   // 底行：ABC（中/英） + 空格（选定）
@@ -426,14 +433,14 @@ local newKeyLayout(isDark=false, isPortrait=true) =
     + basicStyle.newAlphabeticButtonBackgroundStyle(isDark, { insets: insets })
     + basicStyle.newAlphabeticButtonHintStyle(isDark)
     + basicStyle.newSystemButtonBackgroundStyle(isDark, { insets: insets })
-    + basicStyle.newBlueButtonBackgroundStyle(isDark, { insets: insets })
-    + basicStyle.newBlueButtonForegroundStyle(isDark, params.keyboard.enterButton.params)
+    + (if isDark then {} else basicStyle.newBlueButtonBackgroundStyle(isDark, { insets: insets }))
     + basicStyle.newAlphabeticHintBackgroundStyle(isDark, { cornerRadius: 10 })
     + newKeyLayout(isDark, isPortrait)
     + basicStyle.newEnterButtonForegroundStyle(isDark, params.keyboard.enterButton.params)
+    + (if isDark then {} else basicStyle.newT9ConfirmBlueTextStyles(isDark))
     + basicStyle.newCommitCandidateForegroundStyle(isDark, { text: '选定' })
     // Notifications
     + basicStyle.returnKeyboardTypeChangedNotification
-    + basicStyle.preeditChangedForEnterButtonNotification
+    + (if isDark then {} else basicStyle.t9ConfirmBlueNotification)
     + basicStyle.preeditChangedForSpaceButtonNotification,
 }

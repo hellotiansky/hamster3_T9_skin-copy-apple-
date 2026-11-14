@@ -1,0 +1,13 @@
+# 构建产物：由 GitHub Actions 自动打包并通过 Release 发布，不提交到仓库
+/dist/
+
+# 系统与编辑器临时文件
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Python 缓存
+__pycache__/
+*.pyc

@@ -485,12 +485,16 @@ local fonts = import 'Fonts.libsonnet';
       },
     },
 
-    // 九键「确认」键，固定显示「确认」，不与系统回车键文案联动
+    // 九键「确认」键与系统回车键联动：文案跟随系统（前往/搜索/发送/换行等），
+    // 蓝色激活只在亮色模式由 T9Keyboard 追加
     t9ConfirmButton: {
       name: 't9ConfirmButton',
       params: {
         action: 'enter',
-        text: '确认',
+        text: '$returnKeyType',
+        notification: [
+          'returnKeyTypeChangedNotification',
+        ],
       },
     },
 
@@ -565,7 +569,6 @@ local fonts = import 'Fonts.libsonnet';
         text: '$returnKeyType',
         notification: [
           'returnKeyTypeChangedNotification',
-          'preeditChangedForEnterButtonNotification',
         ],
       },
     },

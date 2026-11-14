@@ -74,10 +74,10 @@ local blueButtonBackgroundColor = {
   dark: '#0A84FF',
 };
 
-// 蓝色按键按下时的背景色（保持原来的浅色高亮，不跟随系统按键）
+// 蓝色按键按下时的背景色（比常态稍亮，模仿系统蓝色按键的按压反馈）
 local blueButtonHighlightedBackgroundColor = {
-  light: '#FFFFFF',
-  dark: '#707070',
+  light: '#4A9FFF',
+  dark: '#4DA3FF',
 };
 
 local blueButtonForegroundColor = {
@@ -86,8 +86,8 @@ local blueButtonForegroundColor = {
 };
 
 local blueButtonHighlightedForegroundColor = {
-  light: labelColor.primary.light,
-  dark: labelColor.primary.dark,
+  light: '#FFFFFF',
+  dark: '#FFFFFF',
 };
 
 // 按键底部边缘颜色

@@ -40,8 +40,6 @@ local newAlphabeticButtonBackgroundStyle(isDark=false, params={}) = {
     normalColor: colors.standardButtonBackgroundColor,
     highlightColor: colors.standardButtonHighlightedBackgroundColor,
     cornerRadius: buttonCornerRadius,
-    normalLowerEdgeColor: colors.lowerEdgeOfButtonNormalColor,
-    highlightLowerEdgeColor: colors.lowerEdgeOfButtonHighlightColor,
   } + params, isDark),
 };
 
@@ -64,6 +62,7 @@ local newAlphabeticButtonForegroundStyle(isDark=false, params={}) =
       normalColor: colors.standardButtonForegroundColor,
       highlightColor: colors.standardButtonHighlightedForegroundColor,
       fontSize: fonts.standardButtonTextFontSize,
+      fontWeight: 'light',
     } + params, isDark) + getKeyboardActionText(params);
 
 // 字母键按钮前景样式
@@ -114,8 +113,6 @@ local newSystemButtonBackgroundStyle(isDark=false, params={}) = {
     normalColor: colors.systemButtonBackgroundColor,
     highlightColor: colors.systemButtonHighlightedBackgroundColor,
     cornerRadius: buttonCornerRadius,
-    normalLowerEdgeColor: colors.lowerEdgeOfButtonNormalColor,
-    highlightLowerEdgeColor: colors.lowerEdgeOfButtonHighlightColor,
   } + params, isDark),
 };
 
@@ -125,11 +122,11 @@ local newEnterButtonForegroundStyle(isDark=false, params={}) = {
     normalColor: colors.systemButtonForegroundColor,
     highlightColor: colors.systemButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
+    fontWeight: 'light',
   } + params, isDark) + getKeyboardActionText(params),
 };
 
-
-// 蓝色功能键按钮背景样式
+// 九键确认键「已上屏内容」蓝色样式
 local blueButtonBackgroundStyleName = 'blueButtonBackgroundStyle';
 local newBlueButtonBackgroundStyle(isDark=false, params={}) = {
   [blueButtonBackgroundStyleName]: utils.newGeometryStyle({
@@ -137,45 +134,54 @@ local newBlueButtonBackgroundStyle(isDark=false, params={}) = {
     normalColor: colors.blueButtonBackgroundColor,
     highlightColor: colors.blueButtonHighlightedBackgroundColor,
     cornerRadius: buttonCornerRadius,
-    normalLowerEdgeColor: colors.lowerEdgeOfButtonNormalColor,
-    highlightLowerEdgeColor: colors.lowerEdgeOfButtonHighlightColor,
   } + params, isDark),
 };
 
-local blueButtonForegroundStyleName = 'blueButtonForegroundStyle';
-local newBlueButtonForegroundStyle(isDark=false, params={}) = {
-  [blueButtonForegroundStyleName]: utils.newTextStyle({
+// 九键确认键蓝色状态下的文案。
+// 注意：preeditChanged 通知的上下文里没有回车键类型，
+// 直接使用 `$returnKeyType` 会回落成固定「确定」，
+// 因此这里按系统回车键类型（UIReturnKeyType 原始值）生成条件样式，
+// 每种类型对应一份固定文案的白字样式。
+// 索引与 UIReturnKeyType 原始值一致：
+// 0 default / 1 go / 2 google / 3 join / 4 next / 5 route
+// 6 search / 7 send / 8 yahoo / 9 done / 10 emergencyCall / 11 continue
+local t9ConfirmBlueLabelByReturnKey = [
+  '换行',
+  '前往',
+  'Google',
+  '加入',
+  'next',
+  'route',
+  '搜索',
+  '发送',
+  'Yahoo',
+  '完成',
+  'emergencyCall',
+  'continue',
+];
+
+local t9ConfirmBlueTextStylePrefix = 't9ConfirmBlueTextStyle';
+
+local newT9ConfirmBlueTextStyles(isDark=false) = {
+  [t9ConfirmBlueTextStylePrefix + std.toString(i)]: utils.newTextStyle({
     normalColor: colors.blueButtonForegroundColor,
     highlightColor: colors.blueButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
-  } + params, isDark) + getKeyboardActionText(params),
+    fontWeight: 'light',
+    text: t9ConfirmBlueLabelByReturnKey[i],
+  }, isDark)
+  for i in std.range(0, std.length(t9ConfirmBlueLabelByReturnKey) - 1)
 };
 
-local enterButtonBackgroundStyle = [
+local t9ConfirmBlueForegroundStyleConditions = [
   {
-    styleName: systemButtonBackgroundStyleName,
     conditionKey: '$returnKeyType',
-    conditionValue: [0, 2, 3, 5, 6, 8, 11],
-  },
-  {
-    styleName: blueButtonBackgroundStyleName,
-    conditionKey: '$returnKeyType',
-    conditionValue: [1, 4, 7, 9, 10],
-  },
+    conditionValue: [i],
+    styleName: t9ConfirmBlueTextStylePrefix + std.toString(i),
+  }
+  for i in std.range(0, std.length(t9ConfirmBlueLabelByReturnKey) - 1)
 ];
 
-local enterButtonForegroundStyle = [
-  {
-    styleName: enterButtonForegroundStyleName,
-    conditionKey: '$returnKeyType',
-    conditionValue: [0, 2, 3, 5, 6, 8, 11],
-  },
-  {
-    styleName: blueButtonForegroundStyleName,
-    conditionKey: '$returnKeyType',
-    conditionValue: [1, 4, 7, 9, 10],
-  },
-];
 
 // 文本文字系统功能键按钮前景样式
 local newTextSystemButtonForegroundStyle(isDark=false, params={}) =
@@ -183,6 +189,7 @@ local newTextSystemButtonForegroundStyle(isDark=false, params={}) =
     normalColor: colors.systemButtonForegroundColor,
     highlightColor: colors.systemButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
+    fontWeight: 'light',
   } + params, isDark);
 
 local newImageSystemButtonForegroundStyle(isDark=false, params={}) =
@@ -320,20 +327,13 @@ local newSystemButton(name, isDark=false, params={}) =
   };
 
 
+// 回车键类型变化通知：只刷新文案（前往/搜索/发送/换行等），不改变按键颜色
 local returnKeyboardTypeChangedNotification = {
   returnKeyTypeChangedNotification: {
     notificationType: 'returnKeyType',
-    returnKeyType: [1, 4, 7],
-    backgroundStyle: blueButtonBackgroundStyleName,
-    foregroundStyle: blueButtonForegroundStyleName,
-  },
-};
-
-local preeditChangedForEnterButtonNotification = {
-  preeditChangedForEnterButtonNotification: {
-    notificationType: 'preeditChanged',
-    backgroundStyle: enterButtonBackgroundStyle,
-    foregroundStyle: enterButtonForegroundStyle,
+    returnKeyType: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    backgroundStyle: systemButtonBackgroundStyleName,
+    foregroundStyle: enterButtonForegroundStyleName,
   },
 };
 
@@ -346,11 +346,25 @@ local preeditChangedForSpaceButtonNotification = {
   },
 };
 
+// 九键确认键蓝色激活通知：
+// 监听预编辑文本出现（开始打拼音），命中后锁定蓝色样式。
+// 这样空格上屏、点候选字上屏都能处在这个蓝色状态。
+// 前景用条件样式按回车键类型选择文案，避免蓝色状态固定显示「确定」。
+local t9ConfirmBlueNotification = {
+  t9ConfirmBlueNotification: {
+    notificationType: 'preeditChanged',
+    lockedNotificationMatchState: true,
+    backgroundStyle: blueButtonBackgroundStyleName,
+    foregroundStyle: t9ConfirmBlueForegroundStyleConditions,
+  },
+};
+
 local newCommitCandidateForegroundStyle(isDark=false, params={}) = {
   [commitCandidateForegroundStyleName]: utils.newTextStyle({
     normalColor: colors.standardButtonForegroundColor,
     highlightColor: colors.standardButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
+    fontWeight: 'light',
   } + params, isDark) + params,
 };
 
@@ -387,6 +401,7 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
     normalColor: colors.standardButtonForegroundColor,
     highlightColor: colors.standardButtonHighlightedForegroundColor,
     fontSize: fontSize,
+    fontWeight: 'light',
     text: '分隔',
   }, isDark),
   [t9OneButtonPreeditNotificationName]: {
@@ -419,12 +434,6 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
   systemButtonBackgroundStyleName: systemButtonBackgroundStyleName,
   newSystemButtonBackgroundStyle: newSystemButtonBackgroundStyle,
 
-  blueButtonBackgroundStyleName: blueButtonBackgroundStyleName,
-  newBlueButtonBackgroundStyle: newBlueButtonBackgroundStyle,
-
-  blueButtonForegroundStyleName: blueButtonForegroundStyleName,
-  newBlueButtonForegroundStyle: newBlueButtonForegroundStyle,
-
   newTextSystemButtonForegroundStyle: newTextSystemButtonForegroundStyle,
   newImageSystemButtonForegroundStyle: newImageSystemButtonForegroundStyle,
 
@@ -433,10 +442,14 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
 
   newSystemButton: newSystemButton,
 
-  enterButtonBackgroundStyle: enterButtonBackgroundStyle,
-  enterButtonForegroundStyle: enterButtonForegroundStyle,
   newEnterButtonForegroundStyle: newEnterButtonForegroundStyle,
   newCommitCandidateForegroundStyle: newCommitCandidateForegroundStyle,
+
+  // 九键确认键蓝色激活样式
+  blueButtonBackgroundStyleName: blueButtonBackgroundStyleName,
+  newBlueButtonBackgroundStyle: newBlueButtonBackgroundStyle,
+  t9ConfirmBlueTextStylePrefix: t9ConfirmBlueTextStylePrefix,
+  newT9ConfirmBlueTextStyles: newT9ConfirmBlueTextStyles,
 
   // 九键横向拼音列表
   t9PinyinCellStyleName: t9PinyinCellStyleName,
@@ -448,6 +461,6 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
 
   // notification
   returnKeyboardTypeChangedNotification: returnKeyboardTypeChangedNotification,
-  preeditChangedForEnterButtonNotification: preeditChangedForEnterButtonNotification,
+  t9ConfirmBlueNotification: t9ConfirmBlueNotification,
   preeditChangedForSpaceButtonNotification: preeditChangedForSpaceButtonNotification,
 }
