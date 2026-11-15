@@ -1,27 +1,56 @@
+
 name: Build T9-TWO skin
 
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
+  # 只有手动点击 Run workflow 才会发布
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: t9-two-release-${{ github.ref }}
-  cancel-in-progress: true
+  # 所有发布任务使用同一个队列，避免同时生成相同版本号
+  group: t9-two-release
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # 拉取完整历史，发布说明需要读取推送包含的提交记录
           fetch-depth: 0
+
+      - name: Determine next version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force
+
+          # 获取已有的 v2.x 版本标签
+          latest_tag="$(
+            git tag --list 'v2.*' |
+            grep -E '^v2\.[0-9]+$' |
+            sort -V |
+            tail -n 1 || true
+          )"
+
+          if [ -z "$latest_tag" ]; then
+            # 第一次发布从 v2.0 开始
+            version="v2.0"
+          else
+            # 每次发布自动增加 0.1
+            minor="${latest_tag#v2.}"
+            next_minor=$((minor + 1))
+            version="v2.${next_minor}"
+          fi
+
+          echo "本次自动生成版本：$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Package .cskin
         shell: bash
@@ -31,7 +60,7 @@ jobs:
           rm -rf dist
           mkdir -p dist/T9-TWO
 
-          # 只打包皮肤需要的文件，避免把 .github、.gitattributes 等带进 cskin
+          # 只打包皮肤需要的文件
           for item in config.yaml demo.png README.md dark light jsonnet; do
             if [ -e "$item" ]; then
               cp -R "$item" dist/T9-TWO/
@@ -42,8 +71,9 @@ jobs:
           test -d dist/T9-TWO/dark
           test -d dist/T9-TWO/light
 
-          # cskin 必须是 zip，且顶层文件夹名就是皮肤名
+          # cskin 必须是 zip 格式
           (cd dist && zip -r -9 T9-TWO.cskin T9-TWO)
+
           unzip -l dist/T9-TWO.cskin
 
       - name: Upload build artifact
@@ -56,54 +86,45 @@ jobs:
       - name: Generate release notes
         shell: bash
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          REF_TYPE: ${{ github.ref_type }}
-          REF_NAME: ${{ github.ref_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          AFTER_SHA: ${{ github.event.after }}
+          VERSION: ${{ steps.version.outputs.version }}
           TARGET_SHA: ${{ github.sha }}
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
           set -euo pipefail
 
           notes="dist/release-notes.md"
-          target="${AFTER_SHA:-$TARGET_SHA}"
-          range=""
 
-          # 版本 tag：列出上一个 tag 到当前 tag 之间的提交
-          if [ "$REF_TYPE" = "tag" ]; then
-            prev_tag="$(git describe --tags --abbrev=0 "${REF_NAME}^" 2>/dev/null || true)"
-            if [ -n "$prev_tag" ] && [ "$prev_tag" != "$REF_NAME" ]; then
-              range="${prev_tag}..${REF_NAME}"
-            fi
-          # 推送 main：列出本次推送包含的提交
-          elif [ "$EVENT_NAME" = "push" ] && [ -n "$BEFORE_SHA" ] \
-            && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
-            range="${BEFORE_SHA}..${target}"
-          fi
+          # 获取上一个版本标签
+          prev_tag="$(git describe --tags --abbrev=0 "$TARGET_SHA" 2>/dev/null || true)"
 
-          log_format='- [%h]('"${REPO_URL}"'/commit/%H) %s'
           changelog=""
 
-          if [ -n "$range" ]; then
-            changelog="$(git log --pretty=format:"$log_format" --no-merges "$range" 2>/dev/null || true)"
-            # 只有合并提交时，退回到包含合并提交的记录
-            if [ -z "$changelog" ]; then
-              changelog="$(git log --pretty=format:"$log_format" "$range" 2>/dev/null || true)"
-            fi
+          if [ -n "$prev_tag" ]; then
+            changelog="$(
+              git log \
+                --pretty=format:'- [%h]('"${REPO_URL}"'/commit/%H) %s' \
+                --no-merges \
+                "${prev_tag}..${TARGET_SHA}" 2>/dev/null || true
+            )"
           fi
 
-          # 手动触发、首次推送或无法比对历史时，列出最近 20 条提交
+          # 没有新提交时显示最近20条提交
           if [ -z "$changelog" ]; then
-            changelog="$(git log -20 --pretty=format:"$log_format" "$target" 2>/dev/null || true)"
+            changelog="$(
+              git log -20 \
+                --pretty=format:'- [%h]('"${REPO_URL}"'/commit/%H) %s' \
+                "$TARGET_SHA" 2>/dev/null || true
+            )"
           fi
 
           if [ -z "$changelog" ]; then
-            changelog="- 本次推送没有新的提交记录"
+            changelog="- 本次版本没有新的提交记录"
           fi
 
           {
-            echo "T9-TWO 九键皮肤（自动构建）"
+            echo "T9-TWO 九键皮肤（正式版本）"
+            echo ""
+            echo "版本号：${VERSION}"
             echo ""
             echo "下载 \`T9-TWO.cskin\`，分享到元书 App 导入即可。"
             echo ""
@@ -117,7 +138,7 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "提交记录：${REPO_URL}/commits/${REF_NAME}"
+            echo "提交记录：${REPO_URL}/commits/${VERSION}"
           } > "$notes"
 
           cat "$notes"
@@ -125,15 +146,21 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          # 推送到 main 时更新 rolling 的 latest release；
-          # 推送 v* tag 时创建对应版本 release。
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
-          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'T9-TWO 最新构建' }}
-          # 发布说明由上一步根据本次推送的提交记录生成
+          # 每次使用自动生成的独立版本号
+          tag_name: ${{ steps.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: T9-TWO ${{ steps.version.outputs.version }}
+
           body_path: dist/release-notes.md
+
           files: dist/T9-TWO.cskin
           fail_on_unmatched_files: true
-          overwrite_files: true
+
+          # 禁止覆盖已有安装包
+          overwrite_files: false
+
+          # 自动标记最新版本，不删除历史版本
           make_latest: true
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
