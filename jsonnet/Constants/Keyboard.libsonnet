@@ -391,8 +391,9 @@ local fonts = import 'Fonts.libsonnet';
       name: 't9OneButton',
       params: {
         action: { symbol: '，' },
-        swipeUpAction: { symbol: '。' },
-        text: '，。',
+        swipeUpAction: { symbol: '1' },
+        swipeDownAction: { symbol: '？' },
+        text: '，？',
         fontSize: fonts.t9ButtonTextFontSize,
       },
     },
