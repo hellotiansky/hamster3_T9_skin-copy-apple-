@@ -450,6 +450,7 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
   newBlueButtonBackgroundStyle: newBlueButtonBackgroundStyle,
   t9ConfirmBlueTextStylePrefix: t9ConfirmBlueTextStylePrefix,
   newT9ConfirmBlueTextStyles: newT9ConfirmBlueTextStyles,
+  t9ConfirmBlueForegroundStyleConditions: t9ConfirmBlueForegroundStyleConditions,
 
   // 九键横向拼音列表
   t9PinyinCellStyleName: t9PinyinCellStyleName,
