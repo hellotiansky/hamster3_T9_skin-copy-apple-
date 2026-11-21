@@ -399,6 +399,17 @@ local newKeyLayout(isDark=false, isPortrait=true) =
       ],
       // 展开全部候选时，顶部的预编辑拼音行保持可见；候选区只放候选网格和底部操作行
       verticalCandidatesLayout: [
+        // 展开候选词时仍保留顶部九键拼音候选，便于继续点选/筛选拼音
+        {
+          HStack: {
+            style: t9PinyinRowStyleName,
+            subviews: [
+              {
+                Cell: params.keyboard.t9HorizontalSymbolsCollection.name,
+              },
+            ],
+          },
+        },
         {
           HStack: {
             subviews: [
