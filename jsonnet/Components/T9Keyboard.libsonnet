@@ -26,6 +26,7 @@ local createButtonForegroundStyle(isDark, buttonParams={}) = {
 
 // 行 / 列尺寸样式
 local t9PinyinRowStyleName = 't9PinyinRowStyle';
+local t9VerticalPinyinRowStyleName = 't9VerticalPinyinRowStyle';
 local t9KeyRowStyleName = 't9KeyRowStyle';
 local t9BottomLeftStyleName = 't9BottomLeftStyle';
 local t9BottomCenterStyleName = 't9BottomCenterStyle';
@@ -40,6 +41,10 @@ local t9PinyinDividerSpacerBackgroundStyleName = 't9PinyinDividerSpacerBackgroun
 local t9RowStyles(isPortrait) = {
   [t9PinyinRowStyleName]: {
     size: { height: if isPortrait then 29.5 else 25.5 },
+  },
+  [t9VerticalPinyinRowStyleName]: {
+    // 纵向候选展开时，给拼音音节保留更大的点击区域
+    size: { height: if isPortrait then 40 else 36 },
   },
   [t9PinyinDividerRowStyleName]: {
     // 拼音栏与候选词栏之间的细分隔线，始终显示
@@ -402,10 +407,30 @@ local newKeyLayout(isDark=false, isPortrait=true) =
         // 展开候选词时仍保留顶部九键拼音候选，便于继续点选/筛选拼音
         {
           HStack: {
-            style: t9PinyinRowStyleName,
+            style: t9VerticalPinyinRowStyleName,
             subviews: [
               {
                 Cell: params.keyboard.t9HorizontalSymbolsCollection.name,
+              },
+            ],
+          },
+        },
+        {
+          HStack: {
+            style: t9PinyinDividerRowStyleName,
+            subviews: [
+              {
+                Cell: t9PinyinDividerName,
+              },
+            ],
+          },
+        },
+        {
+          HStack: {
+            style: t9PinyinDividerSpacerRowStyleName,
+            subviews: [
+              {
+                Cell: t9PinyinDividerSpacerName,
               },
             ],
           },
