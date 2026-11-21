@@ -891,7 +891,13 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     {
       size:
         { width: { percentage: 0.2 } },
-    } + params.keyboard.enterButton.params
+    } + params.keyboard.enterButton.params {
+      notification:
+        if isDark then
+          ['returnKeyTypeChangedNotification']
+        else
+          ['returnKeyTypeChangedNotification', 't9ConfirmBlueNotification'],
+    }
   )
 ;
 
@@ -909,11 +915,14 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     + basicStyle.newAlphabeticButtonBackgroundStyle(isDark, extraParams)
     + basicStyle.newAlphabeticButtonHintStyle(isDark)
     + basicStyle.newSystemButtonBackgroundStyle(isDark, extraParams)
+    + (if isDark then {} else basicStyle.newBlueButtonBackgroundStyle(isDark, extraParams))
     + basicStyle.newAlphabeticHintBackgroundStyle(isDark, { cornerRadius: 10 })
     + newKeyLayout(isDark, isPortrait, addSemicolon)
     + basicStyle.newEnterButtonForegroundStyle(isDark, params.keyboard.enterButton.params)
+    + (if isDark then {} else basicStyle.newT9ConfirmBlueTextStyles(isDark))
     + basicStyle.newCommitCandidateForegroundStyle(isDark, { text: '选定' })
     // Notifications
     + basicStyle.returnKeyboardTypeChangedNotification
+    + (if isDark then {} else basicStyle.t9ConfirmBlueNotification)
     + basicStyle.preeditChangedForSpaceButtonNotification,
 }
