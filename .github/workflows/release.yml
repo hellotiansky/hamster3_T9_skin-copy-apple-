@@ -11,6 +11,8 @@ on:
       - 'jsonnet/Components/T9Keyboard.libsonnet'
       - 'jsonnet/Constants/Keyboard.libsonnet'
       - 'jsonnet/Components/BasicStyle.libsonnet'
+      - 'jsonnet/Components/NumericLandscape.libsonnet'
+      - 'jsonnet/Components/NumericPortrait.libsonnet'
       - 'jsonnet/main.jsonnet'
       - '.github/workflows/release.yml'
 
