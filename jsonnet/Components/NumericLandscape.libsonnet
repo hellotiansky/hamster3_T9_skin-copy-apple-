@@ -57,10 +57,10 @@ local alphabeticKeyboardLayout = {
               style: narrowVStackStyle.name,
               subviews: [
                 {
-                  Cell: params.keyboard.numericSymbolsCollection.name,
+                  Cell: params.keyboard.returnLastKeyboardButton.name,
                 },
                 {
-                  Cell: params.keyboard.symbolicButton.name,
+                  Cell: params.keyboard.numericSymbolsCollection.name,
                 },
               ],
             },
@@ -79,7 +79,7 @@ local alphabeticKeyboardLayout = {
                   Cell: params.keyboard.sevenButton.name,
                 },
                 {
-                  Cell: params.keyboard.returnLastKeyboardButton.name,
+                  Cell: params.keyboard.symbolicButton.name,
                 },
               ],
             },
