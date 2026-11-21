@@ -5,6 +5,36 @@ local preedit = import 'Preedit.libsonnet';
 local toolbar = import 'Toolbar.libsonnet';
 local utils = import 'Utils.libsonnet';
 
+
+// 26 键英文输入直接上屏，不经过 preedit；监听实际发出的字母（含大写）和句号动作。
+local alphabeticKeyboardActionSymbols = {
+  a: 'a', b: 'b', c: 'c', d: 'd', e: 'e', f: 'f', g: 'g',
+  h: 'h', i: 'i', j: 'j', k: 'k', l: 'l', m: 'm', n: 'n',
+  o: 'o', p: 'p', q: 'q', r: 'r', s: 's', t: 't', u: 'u',
+  v: 'v', w: 'w', x: 'x', y: 'y', z: 'z',
+  A: 'A', B: 'B', C: 'C', D: 'D', E: 'E', F: 'F', G: 'G',
+  H: 'H', I: 'I', J: 'J', K: 'K', L: 'L', M: 'M', N: 'N',
+  O: 'O', P: 'P', Q: 'Q', R: 'R', S: 'S', T: 'T', U: 'U',
+  V: 'V', W: 'W', X: 'X', Y: 'Y', Z: 'Z',
+  period: '.',
+};
+
+local alphabeticKeyboardActionNotificationNames = [
+  'alphabeticKeyboardAction' + name
+  for name in std.objectFields(alphabeticKeyboardActionSymbols)
+];
+
+local alphabeticKeyboardActionNotifications = {
+  ['alphabeticKeyboardAction' + name]: {
+    notificationType: 'keyboardAction',
+    notificationKeyboardAction: { symbol: alphabeticKeyboardActionSymbols[name] },
+    lockedNotificationMatchState: true,
+    backgroundStyle: basicStyle.blueButtonBackgroundStyleName,
+    foregroundStyle: basicStyle.t9ConfirmBlueForegroundStyleConditions,
+  }
+  for name in std.objectFields(alphabeticKeyboardActionSymbols)
+};
+
 local hintStyle = {
   hintStyle: {
     size: { width: 50, height: 50 },
@@ -893,10 +923,8 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
         { width: { percentage: 0.2 } },
     } + params.keyboard.enterButton.params {
       notification:
-        if isDark then
-          ['returnKeyTypeChangedNotification']
-        else
-          ['returnKeyTypeChangedNotification', 't9ConfirmBlueNotification'],
+        ['returnKeyTypeChangedNotification']
+        + (if isDark then [] else alphabeticKeyboardActionNotificationNames),
     }
   )
 ;
@@ -923,6 +951,6 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     + basicStyle.newCommitCandidateForegroundStyle(isDark, { text: '选定' })
     // Notifications
     + basicStyle.returnKeyboardTypeChangedNotification
-    + (if isDark then {} else basicStyle.t9ConfirmBlueNotification)
+    + (if isDark then {} else alphabeticKeyboardActionNotifications)
     + basicStyle.preeditChangedForSpaceButtonNotification,
 }
