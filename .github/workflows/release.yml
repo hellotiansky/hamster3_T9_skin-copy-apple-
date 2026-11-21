@@ -14,6 +14,7 @@ on:
       - 'jsonnet/Components/NumericLandscape.libsonnet'
       - 'jsonnet/Components/NumericPortrait.libsonnet'
       - 'jsonnet/Components/AlphabeticKeyboard.libsonnet'
+      - 'demo.png'
       - 'jsonnet/main.jsonnet'
       - '.github/workflows/release.yml'
 
