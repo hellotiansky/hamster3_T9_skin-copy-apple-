@@ -265,7 +265,7 @@ local newKeyLayout(isDark=false, isPortrait=false) =
   + basicStyle.newSystemButton(
     params.keyboard.returnLastKeyboardButton.name,
     isDark,
-    params.keyboard.returnLastKeyboardButton.params
+    { size: { height: '1/4' } } + params.keyboard.returnLastKeyboardButton.params
   )
 
   + basicStyle.newSystemButton(
