@@ -26,7 +26,7 @@ local createButtonForegroundStyle(isDark, buttonParams={}) = {
 
 // 行 / 列尺寸样式
 local t9PinyinRowStyleName = 't9PinyinRowStyle';
-local t9VerticalPinyinRowStyleName = 't9VerticalPinyinRowStyle';
+local t9HorizontalCandidatesRowStyleName = 't9HorizontalCandidatesRowStyle';
 local t9KeyRowStyleName = 't9KeyRowStyle';
 local t9BottomLeftStyleName = 't9BottomLeftStyle';
 local t9BottomCenterStyleName = 't9BottomCenterStyle';
@@ -39,21 +39,6 @@ local t9PinyinDividerSpacerName = 't9PinyinDividerSpacer';
 local t9PinyinDividerSpacerBackgroundStyleName = 't9PinyinDividerSpacerBackgroundStyle';
 
 local t9RowStyles(isPortrait) = {
-  [t9PinyinRowStyleName]: {
-    size: { height: if isPortrait then 29.5 else 25.5 },
-  },
-  [t9VerticalPinyinRowStyleName]: {
-    // 纵向候选展开时，给拼音音节保留更大的点击区域
-    size: { height: if isPortrait then 40 else 36 },
-  },
-  [t9PinyinDividerRowStyleName]: {
-    // 拼音栏与候选词栏之间的细分隔线，始终显示
-    size: { height: 0.5 },
-  },
-  [t9PinyinDividerSpacerRowStyleName]: {
-    // 分隔线与候选词背景色块之间的间距
-    size: { height: 4 },
-  },
   [t9KeyRowStyleName]: {
     size: { height: if isPortrait then 55.5 else 41 },
   },
@@ -229,13 +214,6 @@ local newKeyLayout(isDark=false, isPortrait=true) =
 
   + t9RowStyles(isPortrait)
 
-  + {
-    // 横向拼音列表
-    [params.keyboard.t9HorizontalSymbolsCollection.name]:
-      params.keyboard.t9HorizontalSymbolsCollection.params,
-  }
-
-  + basicStyle.newT9PinyinCellStyles(isDark, pinyinFontSize)
   + basicStyle.newT9OneButtonPreeditStyles(isDark, pinyinFontSize)
 
   // 数字键（1 键在预编辑状态显示「分隔」）
@@ -304,7 +282,150 @@ local newKeyLayout(isDark=false, isPortrait=true) =
   );
 
 
+// MARK: - 顶部区域（预编辑 + 拼音音节栏 + 候选词栏）
+//
+// 1) 防跳动：横向候选（常态）与纵向候选（展开态）顶部「音节栏 + 分隔线 + 间隔」
+//    使用同一组行样式和同样的行高，容器 insets 统一为 0；常态各行高度之和恰好等于
+//    toolbarHeight，不会被等比压缩，展开 / 收起时音节栏位置与高度完全不变。
+// 2) 等高：T9、数字键盘、26 键都使用这一套顶部区域，三种键盘总高度一致，
+//    来回切换时键盘不需要改变高度（避免落差感与连续切换卡顿），
+//    在 T9 打字中切到其他键盘时候选词也有地方显示，不会叠到按键上。
+local t9TopMetrics(isPortrait) = {
+  preeditHeight: if isPortrait then 30 else 26,
+  pinyinRowHeight: if isPortrait then 36 else 31.5,
+  dividerHeight: 0.5,
+  dividerSpacerHeight: 4,
+  candidatesRowHeight: if isPortrait then 39.5 else 36,
+};
+
+local t9TopZeroInsets = { top: 0, left: 0, bottom: 0, right: 0 };
+
+local t9TopArea(isDark=false, isPortrait=true) =
+  local m = t9TopMetrics(isPortrait);
+  local t9Toolbar = toolbar.new(isDark);
+  local pinyinFontSize = if isPortrait then 20 else 17;
+  local t9CandidateTextFontSize = if isPortrait then 18 else 16;
+  // 常态与展开态共用的顶部三行
+  local topRows = [
+    {
+      HStack: {
+        style: t9PinyinRowStyleName,
+        subviews: [{ Cell: params.keyboard.t9HorizontalSymbolsCollection.name }],
+      },
+    },
+    {
+      HStack: {
+        style: t9PinyinDividerRowStyleName,
+        subviews: [{ Cell: t9PinyinDividerName }],
+      },
+    },
+    {
+      HStack: {
+        style: t9PinyinDividerSpacerRowStyleName,
+        subviews: [{ Cell: t9PinyinDividerSpacerName }],
+      },
+    },
+  ];
+
+  preedit.new(isDark)
+  + t9Toolbar
+  + {
+    // 拼音预览固定在顶部；工具栏区放「拼音候选栏 + 候选词栏」
+    preeditHeight: m.preeditHeight,
+    preeditStyle: {
+      backgroundStyle: basicStyle.keyboardBackgroundStyleName,
+      foregroundStyle: 't9PreeditForegroundStyle',
+      insets: { left: 10, top: 2 },
+    },
+    t9PreeditForegroundStyle: utils.newTextStyle({
+      normalColor: colors.standardButtonForegroundColor,
+      fontSize: if isPortrait then 20 else 17,
+    }, isDark),
+    // 拼音栏与候选词栏之间的分割线，常态下也显示
+    [t9PinyinDividerName]: {
+      action: 'none',
+      backgroundStyle: t9PinyinDividerBackgroundStyleName,
+    },
+    [t9PinyinDividerBackgroundStyleName]: utils.newGeometryStyle({
+      normalColor: colors.labelColor.tertiary,
+      highlightColor: colors.labelColor.tertiary,
+    }, isDark),
+    // 分隔线与候选词区域之间的透明间距
+    [t9PinyinDividerSpacerName]: {
+      action: 'none',
+      backgroundStyle: t9PinyinDividerSpacerBackgroundStyleName,
+    },
+    [t9PinyinDividerSpacerBackgroundStyleName]: utils.newGeometryStyle({
+      normalColor: '#00000000',
+      highlightColor: '#00000000',
+    }, isDark),
+    // 拼音栏较窄、候选词栏较高，贴近 iOS 的「上窄下宽」；高度 = 各行之和
+    toolbarHeight: m.pinyinRowHeight + m.dividerHeight + m.dividerSpacerHeight + m.candidatesRowHeight,
+    horizontalCandidatesStyle: t9Toolbar.horizontalCandidatesStyle { insets: t9TopZeroInsets },
+    verticalCandidatesStyle: t9Toolbar.verticalCandidatesStyle { insets: t9TopZeroInsets },
+    horizontalCandidateStyle: t9Toolbar.horizontalCandidateStyle {
+      textFontSize: t9CandidateTextFontSize,
+    },
+    // 行高（常态与展开态共用）
+    [t9PinyinRowStyleName]: { size: { height: m.pinyinRowHeight } },
+    [t9PinyinDividerRowStyleName]: { size: { height: m.dividerHeight } },
+    [t9PinyinDividerSpacerRowStyleName]: { size: { height: m.dividerSpacerHeight } },
+    [t9HorizontalCandidatesRowStyleName]: { size: { height: m.candidatesRowHeight } },
+    // 横向拼音列表
+    // 注意：实测元书的 t9HorizontalSymbols 不读取皮肤里的间距、宽度、字号等设置，
+    // 音节间距由元书内部决定（interCellSpacing / maxColumns / cellStyle insets 修改均无效果）。
+    [params.keyboard.t9HorizontalSymbolsCollection.name]:
+      params.keyboard.t9HorizontalSymbolsCollection.params,
+    horizontalCandidatesLayout: [
+      {
+        VStack: {
+          subviews: topRows + [
+            {
+              HStack: {
+                style: t9HorizontalCandidatesRowStyleName,
+                subviews: [
+                  { Cell: 'horizontalCandidates' },
+                  { Cell: 'expandButton' },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    ],
+    // 展开全部候选时仍保留顶部九键拼音候选（与常态完全相同），便于继续点选/筛选拼音
+    verticalCandidatesLayout: [
+      {
+        VStack: {
+          subviews: topRows + [
+            {
+              HStack: {
+                subviews: [{ Cell: 'verticalCandidates' }],
+              },
+            },
+            {
+              HStack: {
+                style: 'verticalLastRowStyle',
+                subviews: [
+                  { Cell: 'verticalPageUpButtonStyle' },
+                  { Cell: 'verticalPageDownButtonStyle' },
+                  { Cell: 'verticalReturnButtonStyle' },
+                  { Cell: 'verticalBackspaceButtonStyle' },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    ],
+  }
+  + basicStyle.newT9PinyinCellStyles(isDark, pinyinFontSize);
+
+
 {
+  // 顶部区域，供数字键盘、26 键复用，保证三种键盘总高度一致
+  topArea: t9TopArea,
+
   new(isDark=false, isPortrait=true):
     local insets =
       if isPortrait then
@@ -312,159 +433,7 @@ local newKeyLayout(isDark=false, isPortrait=true) =
       else
         params.keyboard.button.backgroundInsets.iPhone.landscape;
 
-    local t9Toolbar = toolbar.new(isDark);
-    local t9CandidateTextFontSize = if isPortrait then 18 else 16;
-
-    preedit.new(isDark)
-    + t9Toolbar
-    + {
-      // 拼音预览固定在顶部；工具栏区放「拼音候选栏 + 候选词栏」
-      preeditHeight: if isPortrait then 30 else 26,
-      preeditStyle: {
-        backgroundStyle: basicStyle.keyboardBackgroundStyleName,
-        foregroundStyle: 't9PreeditForegroundStyle',
-        insets: { left: 10, top: 2 },
-      },
-      t9PreeditForegroundStyle: utils.newTextStyle({
-        normalColor: colors.standardButtonForegroundColor,
-        fontSize: if isPortrait then 20 else 17,
-      }, isDark),
-      // 拼音栏与候选词栏之间的分割线，常态下也显示
-      [t9PinyinDividerName]: {
-        action: 'none',
-        backgroundStyle: t9PinyinDividerBackgroundStyleName,
-      },
-      [t9PinyinDividerBackgroundStyleName]: utils.newGeometryStyle({
-        normalColor: colors.labelColor.tertiary,
-        highlightColor: colors.labelColor.tertiary,
-      }, isDark),
-      // 分隔线与候选词区域之间的透明间距
-      [t9PinyinDividerSpacerName]: {
-        action: 'none',
-        backgroundStyle: t9PinyinDividerSpacerBackgroundStyleName,
-      },
-      [t9PinyinDividerSpacerBackgroundStyleName]: utils.newGeometryStyle({
-        normalColor: '#00000000',
-        highlightColor: '#00000000',
-      }, isDark),
-      // 拼音栏较窄、候选词栏较高，贴近 iOS 的「上窄下宽」
-      toolbarHeight: if isPortrait then 80 else 72,
-      horizontalCandidateStyle: t9Toolbar.horizontalCandidateStyle {
-        textFontSize: t9CandidateTextFontSize,
-      },
-      horizontalCandidatesLayout: [
-        {
-          VStack: {
-            subviews: [
-              {
-                HStack: {
-                  style: t9PinyinRowStyleName,
-                  subviews: [
-                    {
-                      Cell: params.keyboard.t9HorizontalSymbolsCollection.name,
-                    },
-                  ],
-                },
-              },
-              {
-                HStack: {
-                  style: t9PinyinDividerRowStyleName,
-                  subviews: [
-                    {
-                      Cell: t9PinyinDividerName,
-                    },
-                  ],
-                },
-              },
-              {
-                HStack: {
-                  style: t9PinyinDividerSpacerRowStyleName,
-                  subviews: [
-                    {
-                      Cell: t9PinyinDividerSpacerName,
-                    },
-                  ],
-                },
-              },
-              {
-                HStack: {
-                  subviews: [
-                    {
-                      Cell: 'horizontalCandidates',
-                    },
-                    {
-                      Cell: 'expandButton',
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      ],
-      // 展开全部候选时，顶部的预编辑拼音行保持可见；候选区只放候选网格和底部操作行
-      verticalCandidatesLayout: [
-        // 展开候选词时仍保留顶部九键拼音候选，便于继续点选/筛选拼音
-        {
-          HStack: {
-            style: t9VerticalPinyinRowStyleName,
-            subviews: [
-              {
-                Cell: params.keyboard.t9HorizontalSymbolsCollection.name,
-              },
-            ],
-          },
-        },
-        {
-          HStack: {
-            style: t9PinyinDividerRowStyleName,
-            subviews: [
-              {
-                Cell: t9PinyinDividerName,
-              },
-            ],
-          },
-        },
-        {
-          HStack: {
-            style: t9PinyinDividerSpacerRowStyleName,
-            subviews: [
-              {
-                Cell: t9PinyinDividerSpacerName,
-              },
-            ],
-          },
-        },
-        {
-          HStack: {
-            subviews: [
-              {
-                Cell: 'verticalCandidates',
-              },
-            ],
-          },
-        },
-        {
-          HStack: {
-            style: 'verticalLastRowStyle',
-            subviews: [
-              {
-                Cell: 'verticalPageUpButtonStyle',
-              },
-              {
-                Cell: 'verticalPageDownButtonStyle',
-              },
-              {
-                Cell: 'verticalReturnButtonStyle',
-              },
-              {
-                Cell: 'verticalBackspaceButtonStyle',
-              },
-            ],
-          },
-        },
-      ],
-    }
+    t9TopArea(isDark, isPortrait)
     + basicStyle.newKeyboardBackgroundStyle(isDark)
     + basicStyle.newAlphabeticButtonBackgroundStyle(isDark, { insets: insets })
     + basicStyle.newAlphabeticButtonHintStyle(isDark)

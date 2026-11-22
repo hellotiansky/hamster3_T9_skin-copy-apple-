@@ -1142,6 +1142,8 @@ local fonts = import 'Fonts.libsonnet';
     },
 
     // 九键横向拼音列表（横向显示 T9 拼音候选）
+    // 注意：实测元书不读取这里的 interCellSpacing / maxColumns 及 cellStyle 的间距、字号设置，
+    // 音节间距由元书内部决定，修改无效果。
     t9HorizontalSymbolsCollection: {
       name: 't9HorizontalSymbolsCollection',
       params: {

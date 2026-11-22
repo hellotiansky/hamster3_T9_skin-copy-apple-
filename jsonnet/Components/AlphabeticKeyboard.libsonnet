@@ -3,6 +3,7 @@ local params = import '../Constants/Keyboard.libsonnet';
 local basicStyle = import 'BasicStyle.libsonnet';
 local preedit = import 'Preedit.libsonnet';
 local toolbar = import 'Toolbar.libsonnet';
+local t9Keyboard = import 'T9Keyboard.libsonnet';
 local utils = import 'Utils.libsonnet';
 
 
@@ -24,16 +25,41 @@ local alphabeticKeyboardActionNotificationNames = [
   for name in std.objectFields(alphabeticKeyboardActionSymbols)
 ];
 
+// 蓝色态回车文字写法：
+//  'variable'  ：直接使用一个白字样式，text 为 $returnKeyType（keyboardAction 通知里可正常取到
+//                回车类型）。不再为每个字母通知重复写 12 条条件样式，浅色 26 键文件约减半，
+//                与 T9 之间互相切换更灵敏。
+//  'conditions'：原写法，每个通知都带 12 条 $returnKeyType 条件样式。
+// 注：T9 的 preeditChanged 通知里取不到回车类型，T9 仍使用条件样式，不受此开关影响。
+// 注：不要用 // JavaScript getText() 写在通知的 foregroundStyle 里，实测不生效（文字消失）。
+local enterBlueForegroundMode = 'variable';
+local alphabeticEnterBlueTextStyleName = 'alphabeticEnterBlueTextStyle';
+
+local alphabeticEnterBlueForegroundStyle =
+  if enterBlueForegroundMode == 'variable'
+  then alphabeticEnterBlueTextStyleName
+  else basicStyle.t9ConfirmBlueForegroundStyleConditions;
+
 local alphabeticKeyboardActionNotifications = {
   ['alphabeticKeyboardAction' + name]: {
     notificationType: 'keyboardAction',
     notificationKeyboardAction: { symbol: alphabeticKeyboardActionSymbols[name] },
     lockedNotificationMatchState: true,
     backgroundStyle: basicStyle.blueButtonBackgroundStyleName,
-    foregroundStyle: basicStyle.t9ConfirmBlueForegroundStyleConditions,
+    foregroundStyle: alphabeticEnterBlueForegroundStyle,
   }
   for name in std.objectFields(alphabeticKeyboardActionSymbols)
 };
+
+local newAlphabeticEnterBlueTextStyles(isDark=false) =
+  if enterBlueForegroundMode == 'variable' then
+    {
+      [alphabeticEnterBlueTextStyleName]: basicStyle.newT9ConfirmBlueTextStyles(isDark)[basicStyle.t9ConfirmBlueTextStylePrefix + '0'] {
+        text: '$returnKeyType',
+      },
+    }
+  else
+    basicStyle.newT9ConfirmBlueTextStyles(isDark);
 
 local hintStyle = {
   hintStyle: {
@@ -937,8 +963,9 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
       insets: insets,
     };
 
-    preedit.new(isDark)
-    + toolbar.new(isDark)
+    // 与 T9 拼音键盘共用顶部区域（预编辑 + 音节栏 + 候选词栏），三种键盘总高度一致：
+    // 来回切换时键盘高度不变（不卡顿、无落差），T9 打字中切过来时候选词也不会叠到按键上。
+    t9Keyboard.topArea(isDark, isPortrait)
     + basicStyle.newKeyboardBackgroundStyle(isDark)
     + basicStyle.newAlphabeticButtonBackgroundStyle(isDark, extraParams)
     + basicStyle.newAlphabeticButtonHintStyle(isDark)
@@ -947,7 +974,7 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     + basicStyle.newAlphabeticHintBackgroundStyle(isDark, { cornerRadius: 10 })
     + newKeyLayout(isDark, isPortrait, addSemicolon)
     + basicStyle.newEnterButtonForegroundStyle(isDark, params.keyboard.enterButton.params)
-    + (if isDark then {} else basicStyle.newT9ConfirmBlueTextStyles(isDark))
+    + (if isDark then {} else newAlphabeticEnterBlueTextStyles(isDark))
     + basicStyle.newCommitCandidateForegroundStyle(isDark, { text: '选定' })
     // Notifications
     + basicStyle.returnKeyboardTypeChangedNotification

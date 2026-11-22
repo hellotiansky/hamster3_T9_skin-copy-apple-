@@ -2,6 +2,7 @@ local params = import '../Constants/Keyboard.libsonnet';
 local basicStyle = import 'BasicStyle.libsonnet';
 local preedit = import 'Preedit.libsonnet';
 local toolbar = import 'Toolbar.libsonnet';
+local t9Keyboard = import 'T9Keyboard.libsonnet';
 local utils = import 'Utils.libsonnet';
 
 
@@ -262,8 +263,9 @@ local extraParams = {
       insets: insets,
     };
 
-    preedit.new(isDark)
-    + toolbar.new(isDark)
+    // 与 T9 拼音键盘共用顶部区域（预编辑 + 音节栏 + 候选词栏），三种键盘总高度一致，
+    // 从 T9 按「123」切换时没有高度落差。
+    t9Keyboard.topArea(isDark, isPortrait)
     + narrowVStackStyle.style
     + wideVStackStyle.style
     + basicStyle.newKeyboardBackgroundStyle(isDark)
