@@ -2,21 +2,15 @@
 name: Build hamster3_T9_skin_copy_ios skin
 
 on:
-  # 支持手动发布；九键布局或构建脚本变更时也自动构建
+  # 支持手动发布；jsonnet 源码、README、预览图或构建脚本变更时自动构建
   workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - 'jsonnet/Components/T9Keyboard.libsonnet'
-      - 'jsonnet/Constants/Keyboard.libsonnet'
-      - 'jsonnet/Components/BasicStyle.libsonnet'
-      - 'jsonnet/Components/NumericLandscape.libsonnet'
-      - 'jsonnet/Components/NumericPortrait.libsonnet'
-      - 'jsonnet/Components/AlphabeticKeyboard.libsonnet'
+      - 'jsonnet/**'
       - 'demo.png'
       - 'README.md'
-      - 'jsonnet/main.jsonnet'
       - '.github/workflows/release.yml'
 
 permissions:
