@@ -120,6 +120,76 @@ local createRightTopBadgeForegroundStyle(isDark, params={}) = {
     basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, params.params + rightBadgeLabelUpParams),
 };
 
+// ---- 上滑角标 / 下滑提示 ----
+// 角标文字直接取自按键定义里的 swipeUpAction / swipeDownAction；
+// 快捷指令（剪切、复制…）没有可显示的字符，用 swipeUpText / swipeDownText 指定文字，
+// 或用 swipeDownSystemImageName 显示 SF Symbols 图标（如 Tab）。
+local bottomBadgeLabelDownParams = {
+  center: {
+    y: 0.8,
+  },
+  fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+};
+
+// 动作对应的可输入字符；快捷指令、tab 等返回空串
+local swipeActionText(action) =
+  if std.type(action) == 'object' && std.objectHas(action, 'symbol') then action.symbol
+  else if std.type(action) == 'object' && std.objectHas(action, 'character') then action.character
+  else '';
+
+local swipeLabelText(p, actionKey, textKey) =
+  if std.objectHas(p, textKey) then p[textKey]
+  else if std.objectHas(p, actionKey) then swipeActionText(p[actionKey])
+  else '';
+
+local newSwipeLetterButton(isDark, button, extraParams={}) =
+  local p = button.params;
+  local name = button.name;
+  local upText = swipeLabelText(p, 'swipeUpAction', 'swipeUpText');
+  local downText = swipeLabelText(p, 'swipeDownAction', 'swipeDownText');
+  local downImage = if std.objectHas(p, 'swipeDownSystemImageName') then p.swipeDownSystemImageName else '';
+  // 上 / 下滑气泡只给能输入字符的动作，快捷指令不弹气泡
+  local upHint = if std.objectHas(p, 'swipeUpAction') then swipeActionText(p.swipeUpAction) else '';
+  local downHint = if std.objectHas(p, 'swipeDownAction') then swipeActionText(p.swipeDownAction) else '';
+  local upBadgeName = name + 'SwipeUpBadgeForegroundStyle';
+  local downBadgeName = name + 'SwipeDownBadgeForegroundStyle';
+  local upHintName = name + 'SwipeUpHintForegroundStyle';
+  local downHintName = name + 'SwipeDownHintForegroundStyle';
+  basicStyle.newAlphabeticButton(
+    name,
+    isDark,
+    extraParams
+    + p {
+      hintStyle: hintStyle.hintStyle
+                 + (if upHint != '' then { swipeUpForegroundStyle: upHintName } else {})
+                 + (if downHint != '' then { swipeDownForegroundStyle: downHintName } else {}),
+    }
+    + {
+      foregroundStyleName:
+        [name + 'ForegroundStyle']
+        + (if upText != '' then [upBadgeName] else [])
+        + (if downText != '' || downImage != '' then [downBadgeName] else []),
+    }
+    + {
+      foregroundStyle:
+        createButtonForegroundStyle(isDark, button)
+        + (
+          if upText != '' then
+            { [upBadgeName]: basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, { text: upText } + topBadgeLabelUpParams) }
+          else {}
+        )
+        + (
+          if downImage != '' then
+            { [downBadgeName]: basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, { systemImageName: downImage } + bottomBadgeLabelDownParams) }
+          else if downText != '' then
+            { [downBadgeName]: basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, { text: downText } + bottomBadgeLabelDownParams) }
+          else {}
+        ),
+    }
+  )
+  + (if upHint != '' then { [upHintName]: basicStyle.newAlphabeticButtonHintStyle(isDark) + { text: upHint } } else {})
+  + (if downHint != '' then { [downHintName]: basicStyle.newAlphabeticButtonHintStyle(isDark) + { text: downHint } } else {});
+
 
 // 标准26键布局
 local alphabeticKeyboardLayout(addSemicolon=false) = {
@@ -267,26 +337,7 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
   + alphabeticKeyboardLayout(addSemicolon)
 
   // First Row
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.qButton.name,
-    isDark,
-    params.keyboard.qButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.oneButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.qButton.name + 'ForegroundStyle',
-        params.keyboard.oneButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.qButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.oneButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.oneButton)
+  + newSwipeLetterButton(isDark, params.keyboard.qButton)
 
   + basicStyle.newAlphabeticButton(
     params.keyboard.wButton.name,
@@ -435,52 +486,14 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
     }
   ) + createSwipeUpHintStyle(isDark, params.keyboard.eightButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.oButton.name,
-    isDark,
-    params.keyboard.oButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.nineButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.oButton.name + 'ForegroundStyle',
-        params.keyboard.nineButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.oButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.nineButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.nineButton)
+  + newSwipeLetterButton(isDark, params.keyboard.oButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.pButton.name,
-    isDark,
-    params.keyboard.pButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.zeroButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.pButton.name + 'ForegroundStyle',
-        params.keyboard.zeroButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.pButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.zeroButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.zeroButton)
+  + newSwipeLetterButton(isDark, params.keyboard.pButton)
 
   // Second Row
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.aButton.name,
+  + newSwipeLetterButton(
     isDark,
+    params.keyboard.aButton,
     (
       if addSemicolon == false then
         {
@@ -491,175 +504,25 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
         }
       else {}
     )
-    + params.keyboard.aButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.graveButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.aButton.name + 'ForegroundStyle',
-        params.keyboard.graveButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.aButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.graveButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.graveButton)
-
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.sButton.name,
-    isDark,
-    params.keyboard.sButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.forwardSlashButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.sButton.name + 'ForegroundStyle',
-        params.keyboard.forwardSlashButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.sButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.forwardSlashButton),
-    }
   )
-  + createSwipeUpHintStyle(isDark, params.keyboard.forwardSlashButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.dButton.name,
-    isDark,
-    params.keyboard.dButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.colonButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.dButton.name + 'ForegroundStyle',
-        params.keyboard.colonButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.dButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.colonButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.colonButton)
+  + newSwipeLetterButton(isDark, params.keyboard.sButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.fButton.name,
-    isDark,
-    params.keyboard.fButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.semicolonButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.fButton.name + 'ForegroundStyle',
-        params.keyboard.semicolonButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.fButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.semicolonButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.semicolonButton)
+  + newSwipeLetterButton(isDark, params.keyboard.dButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.gButton.name,
-    isDark,
-    params.keyboard.gButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.leftParenthesisButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.gButton.name + 'ForegroundStyle',
-        params.keyboard.leftParenthesisButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.gButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.leftParenthesisButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.leftParenthesisButton)
+  + newSwipeLetterButton(isDark, params.keyboard.fButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.hButton.name,
-    isDark,
-    params.keyboard.hButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.rightParenthesisButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.hButton.name + 'ForegroundStyle',
-        params.keyboard.rightParenthesisButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.hButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.rightParenthesisButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.rightParenthesisButton)
+  + newSwipeLetterButton(isDark, params.keyboard.gButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.jButton.name,
-    isDark,
-    params.keyboard.jButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.apostropheButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.jButton.name + 'ForegroundStyle',
-        params.keyboard.apostropheButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.jButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.apostropheButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.apostropheButton)
+  + newSwipeLetterButton(isDark, params.keyboard.hButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.kButton.name,
-    isDark,
-    params.keyboard.kButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.leftCurlyQuoteButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.kButton.name + 'ForegroundStyle',
-        params.keyboard.leftCurlyQuoteButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.kButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.leftCurlyQuoteButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.leftCurlyQuoteButton)
+  + newSwipeLetterButton(isDark, params.keyboard.jButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.lButton.name,
+  + newSwipeLetterButton(isDark, params.keyboard.kButton)
+
+  + newSwipeLetterButton(
     isDark,
+    params.keyboard.lButton,
     (
       if addSemicolon == false then
         {
@@ -670,23 +533,7 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
         }
       else {}
     )
-    + params.keyboard.lButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.rightCurlyQuoteButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.lButton.name + 'ForegroundStyle',
-        params.keyboard.rightCurlyQuoteButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.lButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.rightCurlyQuoteButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.rightCurlyQuoteButton)
+  )
 
   + (
     if addSemicolon == true then
@@ -740,153 +587,20 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
       basicStyle.newImageSystemButtonForegroundStyle(isDark, params.keyboard.shiftButton.capsLockedParams),
   }
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.zButton.name,
-    isDark,
-    params.keyboard.zButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.atButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.zButton.name + 'ForegroundStyle',
-        params.keyboard.atButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.zButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.atButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.atButton)
+  + newSwipeLetterButton(isDark, params.keyboard.zButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.xButton.name,
-    isDark,
-    params.keyboard.xButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.tildeButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.xButton.name + 'ForegroundStyle',
-        params.keyboard.tildeButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.xButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.tildeButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.tildeButton)
+  + newSwipeLetterButton(isDark, params.keyboard.xButton)
 
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.cButton.name,
-    isDark,
-    params.keyboard.cButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.hashButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.cButton.name + 'ForegroundStyle',
-        params.keyboard.hashButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.cButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.hashButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.hashButton)
+  + newSwipeLetterButton(isDark, params.keyboard.cButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.vButton.name,
-    isDark,
-    params.keyboard.vButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.ideographicCommaButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.vButton.name + 'ForegroundStyle',
-        params.keyboard.ideographicCommaButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.vButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.ideographicCommaButton),
-    },
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.ideographicCommaButton)
+  + newSwipeLetterButton(isDark, params.keyboard.vButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.bButton.name,
-    isDark,
-    params.keyboard.bButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.questionMarkButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.bButton.name + 'ForegroundStyle',
-        params.keyboard.questionMarkButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.bButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.questionMarkButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.questionMarkButton)
+  + newSwipeLetterButton(isDark, params.keyboard.bButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.nButton.name,
-    isDark,
-    params.keyboard.nButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.exclamationMarkButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.nButton.name + 'ForegroundStyle',
-        params.keyboard.exclamationMarkButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.nButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.exclamationMarkButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.exclamationMarkButton)
+  + newSwipeLetterButton(isDark, params.keyboard.nButton)
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.mButton.name,
-    isDark,
-    params.keyboard.mButton.params {
-      hintStyle: hintStyle.hintStyle {
-        swipeUpForegroundStyle: params.keyboard.ellipsisButton.name + 'SwipeUpHintForegroundStyle',
-      },
-    }
-    + {
-      foregroundStyleName: [
-        params.keyboard.mButton.name + 'ForegroundStyle',
-        params.keyboard.ellipsisButton.name + 'BadgeForegroundStyle',
-      ],
-    }
-    + {
-      foregroundStyle:
-        createButtonForegroundStyle(isDark, params.keyboard.mButton)
-        + createTopBadgeForegroundStyle(isDark, params.keyboard.ellipsisButton),
-    }
-  ) + createSwipeUpHintStyle(isDark, params.keyboard.ellipsisButton)
+  + newSwipeLetterButton(isDark, params.keyboard.mButton)
 
   + basicStyle.newSystemButton(
     params.keyboard.backspaceButton.name,
@@ -912,15 +626,14 @@ local newKeyLayout(isDark=false, isPortrait=true, addSemicolon=true) =
   )
 
 
-  + basicStyle.newAlphabeticButton(
-    params.keyboard.commaButton.name,
+  // 英文句点键：不设上滑 / 下滑
+  + newSwipeLetterButton(
     isDark,
+    params.keyboard.commaButton,
     {
       size:
         { width: { percentage: 0.1 } },
     }
-    + params.keyboard.commaButton.params,
-    needHint=false,
   )
 
   + basicStyle.newAlphabeticButton(

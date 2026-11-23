@@ -62,7 +62,6 @@ local newAlphabeticButtonForegroundStyle(isDark=false, params={}) =
       normalColor: colors.standardButtonForegroundColor,
       highlightColor: colors.standardButtonHighlightedForegroundColor,
       fontSize: fonts.standardButtonTextFontSize,
-      fontWeight: 'light',
     } + params, isDark) + getKeyboardActionText(params);
 
 // 字母键按钮前景样式
@@ -122,7 +121,6 @@ local newEnterButtonForegroundStyle(isDark=false, params={}) = {
     normalColor: colors.systemButtonForegroundColor,
     highlightColor: colors.systemButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
-    fontWeight: 'light',
   } + params, isDark) + getKeyboardActionText(params),
 };
 
@@ -167,7 +165,6 @@ local newT9ConfirmBlueTextStyles(isDark=false) = {
     normalColor: colors.blueButtonForegroundColor,
     highlightColor: colors.blueButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
-    fontWeight: 'light',
     text: t9ConfirmBlueLabelByReturnKey[i],
   }, isDark)
   for i in std.range(0, std.length(t9ConfirmBlueLabelByReturnKey) - 1)
@@ -189,7 +186,6 @@ local newTextSystemButtonForegroundStyle(isDark=false, params={}) =
     normalColor: colors.systemButtonForegroundColor,
     highlightColor: colors.systemButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
-    fontWeight: 'light',
   } + params, isDark);
 
 local newImageSystemButtonForegroundStyle(isDark=false, params={}) =
@@ -364,7 +360,6 @@ local newCommitCandidateForegroundStyle(isDark=false, params={}) = {
     normalColor: colors.standardButtonForegroundColor,
     highlightColor: colors.standardButtonHighlightedForegroundColor,
     fontSize: fonts.systemButtonTextFontSize,
-    fontWeight: 'light',
   } + params, isDark) + params,
 };
 
@@ -401,7 +396,6 @@ local newT9OneButtonPreeditStyles(isDark=false, fontSize=17) = {
     normalColor: colors.standardButtonForegroundColor,
     highlightColor: colors.standardButtonHighlightedForegroundColor,
     fontSize: fontSize,
-    fontWeight: 'light',
     text: '分隔',
   }, isDark),
   [t9OneButtonPreeditNotificationName]: {

@@ -6,18 +6,29 @@ local preedit = import 'Preedit.libsonnet';
 local toolbar = import 'Toolbar.libsonnet';
 local utils = import 'Utils.libsonnet';
 
-local rightBadgeLabelUpParams = {
-  center: {
-    x: 0.85,
-    y: 0.25,
-  },
-  fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+// 上滑角标（数字）放在键面正上方居中，下滑提示（行首 / 复制 …）放在正下方居中，上下对称。
+// 横屏按键较矮，上下两行稍微往外推，避免压到中间的字母。
+local t9BadgeY(isPortrait) =
+  if isPortrait then { top: 0.2, bottom: 0.8 } else { top: 0.18, bottom: 0.82 };
+
+local createTopBadgeForegroundStyle(isDark, buttonParams={}, isPortrait=true) = {
+  [buttonParams.name + 'BadgeForegroundStyle']:
+    basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, buttonParams.params + {
+      center: { x: 0.5, y: t9BadgeY(isPortrait).top },
+      fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+    }),
 };
 
-local createRightBadgeForegroundStyle(isDark, buttonParams={}) = {
-  [buttonParams.name + 'BadgeForegroundStyle']:
-    basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, buttonParams.params + rightBadgeLabelUpParams),
-};
+// 按键定义里有 swipeDownText 时生成下滑提示样式
+local createSwipeDownLabelForegroundStyle(isDark, buttonParams={}, isPortrait=true) =
+  if std.objectHas(buttonParams.params, 'swipeDownText') then {
+    [buttonParams.name + 'SwipeDownForegroundStyle']:
+      basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, {
+        text: buttonParams.params.swipeDownText,
+        center: { x: 0.5, y: t9BadgeY(isPortrait).bottom },
+        fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+      }),
+  } else {};
 
 local createButtonForegroundStyle(isDark, buttonParams={}) = {
   [buttonParams.name + 'ForegroundStyle']:
@@ -54,19 +65,26 @@ local t9RowStyles(isPortrait) = {
 };
 
 // 单个九键数字键
-local t9Button(isDark, button, badge, fontSize, preeditState=false, showBadge=true) =
+local t9Button(isDark, button, badge, fontSize, preeditState=false, showBadge=true, isPortrait=true) =
   basicStyle.newAlphabeticButton(
     button.name,
     isDark,
     button.params {
       foregroundStyleName:
-        if showBadge then
-          [
-            button.name + 'ForegroundStyle',
-            badge.name + 'BadgeForegroundStyle',
-          ]
-        else
-          [button.name + 'ForegroundStyle'],
+        (
+          if showBadge then
+            [
+              button.name + 'ForegroundStyle',
+              badge.name + 'BadgeForegroundStyle',
+            ]
+          else
+            [button.name + 'ForegroundStyle']
+        )
+        + (
+          if std.objectHas(button.params, 'swipeDownText') then
+            [button.name + 'SwipeDownForegroundStyle']
+          else []
+        ),
     }
     + (
       if preeditState then
@@ -80,9 +98,10 @@ local t9Button(isDark, button, badge, fontSize, preeditState=false, showBadge=tr
         })
         + (
           if showBadge then
-            createRightBadgeForegroundStyle(isDark, badge)
+            createTopBadgeForegroundStyle(isDark, badge, isPortrait)
           else {}
-        ),
+        )
+        + createSwipeDownLabelForegroundStyle(isDark, button, isPortrait),
     },
     needHint=false
   );
@@ -217,15 +236,15 @@ local newKeyLayout(isDark=false, isPortrait=true) =
   + basicStyle.newT9OneButtonPreeditStyles(isDark, pinyinFontSize)
 
   // 数字键（1 键在预编辑状态显示「分隔」）
-  + t9Button(isDark, params.keyboard.t9OneButton, params.keyboard.oneButton, t9FontSize, true)
-  + t9Button(isDark, params.keyboard.t9TwoButton, params.keyboard.twoButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9ThreeButton, params.keyboard.threeButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9FourButton, params.keyboard.fourButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9FiveButton, params.keyboard.fiveButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9SixButton, params.keyboard.sixButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9SevenButton, params.keyboard.sevenButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9EightButton, params.keyboard.eightButton, t9FontSize)
-  + t9Button(isDark, params.keyboard.t9NineButton, params.keyboard.nineButton, t9FontSize)
+  + t9Button(isDark, params.keyboard.t9OneButton, params.keyboard.oneButton, t9FontSize, true, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9TwoButton, params.keyboard.twoButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9ThreeButton, params.keyboard.threeButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9FourButton, params.keyboard.fourButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9FiveButton, params.keyboard.fiveButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9SixButton, params.keyboard.sixButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9SevenButton, params.keyboard.sevenButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9EightButton, params.keyboard.eightButton, t9FontSize, isPortrait=isPortrait)
+  + t9Button(isDark, params.keyboard.t9NineButton, params.keyboard.nineButton, t9FontSize, isPortrait=isPortrait)
 
   // 左侧列 / 右侧列
   + basicStyle.newAlphabeticButton(

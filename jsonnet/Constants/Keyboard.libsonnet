@@ -110,12 +110,16 @@ local fonts = import 'Fonts.libsonnet';
     },
 
     // 按键定义
+    // 26 键上下滑：键面上方 / 下方的角标直接取自 swipeUpAction / swipeDownAction，
+    // 快捷指令用 swipeUpText / swipeDownText 指定角标文字，swipeDownSystemImageName 指定图标。
     qButton: {
       name: 'qButton',
       params: {
         action: { symbol: 'q' },
         uppercasedStateAction: { symbol: 'Q' },
         swipeUpAction: { symbol: '1' },
+        swipeDownAction: { shortcut: '#行首' },
+        swipeDownText: '行首',
       },
     },
     wButton: {
@@ -180,6 +184,8 @@ local fonts = import 'Fonts.libsonnet';
         action: { symbol: 'o' },
         uppercasedStateAction: { symbol: 'O' },
         swipeUpAction: { symbol: '9' },
+        swipeDownAction: 'tab',
+        swipeDownSystemImageName: 'arrow.right.to.line',
       },
     },
     pButton: {
@@ -188,6 +194,8 @@ local fonts = import 'Fonts.libsonnet';
         action: { symbol: 'p' },
         uppercasedStateAction: { symbol: 'P' },
         swipeUpAction: { symbol: '0' },
+        swipeDownAction: { shortcut: '#行尾' },
+        swipeDownText: '行尾',
       },
     },
 
@@ -197,7 +205,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'a' },
         uppercasedStateAction: { symbol: 'A' },
-        swipeUpAction: { symbol: '`' },
+        swipeUpAction: { symbol: '#' },
       },
     },
     sButton: {
@@ -205,7 +213,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 's' },
         uppercasedStateAction: { symbol: 'S' },
-        swipeUpAction: { symbol: '/' },
+        swipeUpAction: { symbol: '@' },
       },
     },
     dButton: {
@@ -221,7 +229,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'f' },
         uppercasedStateAction: { symbol: 'F' },
-        swipeUpAction: { symbol: ';' },
+        swipeUpAction: { symbol: '-' },
       },
     },
     gButton: {
@@ -229,7 +237,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'g' },
         uppercasedStateAction: { symbol: 'G' },
-        swipeUpAction: { symbol: '(' },
+        swipeUpAction: { symbol: '_' },
       },
     },
     hButton: {
@@ -237,7 +245,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'h' },
         uppercasedStateAction: { symbol: 'H' },
-        swipeUpAction: { symbol: ')' },
+        swipeUpAction: { symbol: "'" },
       },
     },
     jButton: {
@@ -245,7 +253,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'j' },
         uppercasedStateAction: { symbol: 'J' },
-        swipeUpAction: { symbol: "'" },
+        swipeUpAction: { symbol: ',' },
       },
     },
     kButton: {
@@ -253,7 +261,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'k' },
         uppercasedStateAction: { symbol: 'K' },
-        swipeUpAction: { symbol: '“' },
+        swipeUpAction: { symbol: '/' },
       },
     },
 
@@ -262,7 +270,7 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'l' },
         uppercasedStateAction: { symbol: 'L' },
-        swipeUpAction: { symbol: '”' },
+        swipeUpAction: { symbol: '"' },
       },
     },
 
@@ -272,7 +280,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'z' },
         uppercasedStateAction: { symbol: 'Z' },
-        swipeUpAction: { symbol: '@' },
+        swipeDownAction: { shortcut: '#undo' },
+        swipeDownText: '撤销',
       },
     },
     xButton: {
@@ -280,7 +289,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'x' },
         uppercasedStateAction: { symbol: 'X' },
-        swipeUpAction: { symbol: '~' },
+        swipeDownAction: { shortcut: '#cut' },
+        swipeDownText: '剪切',
       },
     },
     cButton: {
@@ -288,7 +298,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'c' },
         uppercasedStateAction: { symbol: 'C' },
-        swipeUpAction: { symbol: '#' },
+        swipeDownAction: { shortcut: '#copy' },
+        swipeDownText: '复制',
       },
     },
     vButton: {
@@ -296,7 +307,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'v' },
         uppercasedStateAction: { symbol: 'V' },
-        swipeUpAction: { symbol: '、' },
+        swipeDownAction: { shortcut: '#paste' },
+        swipeDownText: '粘贴',
       },
     },
     bButton: {
@@ -304,7 +316,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'b' },
         uppercasedStateAction: { symbol: 'B' },
-        swipeUpAction: { symbol: '?' },
+        swipeDownAction: { shortcut: '#selectText' },
+        swipeDownText: '全选',
       },
     },
     nButton: {
@@ -312,7 +325,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'n' },
         uppercasedStateAction: { symbol: 'N' },
-        swipeUpAction: { symbol: '!' },
+        swipeDownAction: { shortcut: '#deleteText' },
+        swipeDownText: '清空',
       },
     },
     mButton: {
@@ -320,7 +334,8 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { symbol: 'm' },
         uppercasedStateAction: { symbol: 'M' },
-        swipeUpAction: { symbol: '…' },
+        swipeDownAction: { shortcut: '#换行' },
+        swipeDownText: '换行',
       },
     },
 
@@ -393,7 +408,11 @@ local fonts = import 'Fonts.libsonnet';
         action: { symbol: '，' },
         swipeUpAction: { symbol: '1' },
         swipeDownAction: { symbol: '？' },
-        text: '，？',
+        // 键面中间显示 ，，下方提示下滑的 ？（与 2–9 键上下对称）
+        text: '，',
+        // 全角逗号字形贴在字框左下角，居中后视觉偏低，上移一点
+        center: { x: 0.5, y: 0.4 },
+        swipeDownText: '？',
         fontSize: fonts.t9ButtonTextFontSize,
       },
     },
@@ -402,6 +421,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '2' },
         swipeUpAction: { symbol: '2' },
+        // 下滑：光标到行首
+        swipeDownAction: { shortcut: '#行首' },
+        swipeDownText: '行首',
         text: 'ABC',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -411,6 +433,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '3' },
         swipeUpAction: { symbol: '3' },
+        // 下滑：光标到行尾
+        swipeDownAction: { shortcut: '#行尾' },
+        swipeDownText: '行尾',
         text: 'DEF',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -420,6 +445,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '4' },
         swipeUpAction: { symbol: '4' },
+        // 下滑：全选
+        swipeDownAction: { shortcut: '#selectText' },
+        swipeDownText: '全选',
         text: 'GHI',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -429,6 +457,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '5' },
         swipeUpAction: { symbol: '5' },
+        // 下滑：复制
+        swipeDownAction: { shortcut: '#copy' },
+        swipeDownText: '复制',
         text: 'JKL',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -438,6 +469,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '6' },
         swipeUpAction: { symbol: '6' },
+        // 下滑：粘贴
+        swipeDownAction: { shortcut: '#paste' },
+        swipeDownText: '粘贴',
         text: 'MNO',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -447,6 +481,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '7' },
         swipeUpAction: { symbol: '7' },
+        // 下滑：清空
+        swipeDownAction: { shortcut: '#deleteText' },
+        swipeDownText: '清空',
         text: 'PQRS',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -456,6 +493,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '8' },
         swipeUpAction: { symbol: '8' },
+        // 下滑：撤销（撤回上一步编辑，如误清空）
+        swipeDownAction: { shortcut: '#undo' },
+        swipeDownText: '撤销',
         text: 'TUV',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -465,6 +505,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '9' },
         swipeUpAction: { symbol: '9' },
+        // 下滑：换行
+        swipeDownAction: { shortcut: '#换行' },
+        swipeDownText: '换行',
         text: 'WXYZ',
         fontSize: fonts.t9ButtonTextFontSize,
       },
