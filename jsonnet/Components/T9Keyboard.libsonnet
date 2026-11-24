@@ -19,15 +19,26 @@ local createTopBadgeForegroundStyle(isDark, buttonParams={}, isPortrait=true) = 
     }),
 };
 
-// 按键定义里有 swipeDownText 时生成下滑提示样式
+// 按键定义里有 swipeDownText（文字）或 swipeDownSystemImageName（图标，如 Tab）时生成下滑提示样式
+local hasSwipeDownLabel(p) =
+  std.objectHas(p, 'swipeDownText') || std.objectHas(p, 'swipeDownSystemImageName');
+
 local createSwipeDownLabelForegroundStyle(isDark, buttonParams={}, isPortrait=true) =
-  if std.objectHas(buttonParams.params, 'swipeDownText') then {
+  if hasSwipeDownLabel(buttonParams.params) then {
     [buttonParams.name + 'SwipeDownForegroundStyle']:
-      basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, {
-        text: buttonParams.params.swipeDownText,
-        center: { x: 0.5, y: t9BadgeY(isPortrait).bottom },
-        fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
-      }),
+      basicStyle.newAlphabeticButtonSwipeForegroundStyle(
+        isDark,
+        (
+          if std.objectHas(buttonParams.params, 'swipeDownSystemImageName') then
+            { systemImageName: buttonParams.params.swipeDownSystemImageName }
+          else
+            { text: buttonParams.params.swipeDownText }
+        )
+        + {
+          center: { x: 0.5, y: t9BadgeY(isPortrait).bottom },
+          fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+        }
+      ),
   } else {};
 
 local createButtonForegroundStyle(isDark, buttonParams={}) = {
@@ -81,7 +92,7 @@ local t9Button(isDark, button, badge, fontSize, preeditState=false, showBadge=tr
             [button.name + 'ForegroundStyle']
         )
         + (
-          if std.objectHas(button.params, 'swipeDownText') then
+          if hasSwipeDownLabel(button.params) then
             [button.name + 'SwipeDownForegroundStyle']
           else []
         ),
@@ -265,11 +276,27 @@ local newKeyLayout(isDark=false, isPortrait=true) =
     isDark,
     params.keyboard.numericButton.params
   )
+  // 删除键：上滑清空、下滑撤销，键面正上方 / 正下方显示提示（只用于九键）
   + basicStyle.newSystemButton(
-    params.keyboard.backspaceButton.name,
+    params.keyboard.t9BackspaceButton.name,
     isDark,
-    params.keyboard.backspaceButton.params,
+    params.keyboard.t9BackspaceButton.params {
+      foregroundStyle: [
+        params.keyboard.t9BackspaceButton.name + 'ForegroundStyle',
+        params.keyboard.t9BackspaceButton.name + 'SwipeUpForegroundStyle',
+        params.keyboard.t9BackspaceButton.name + 'SwipeDownForegroundStyle',
+      ],
+    },
   )
+  + {
+    [params.keyboard.t9BackspaceButton.name + 'SwipeUpForegroundStyle']:
+      basicStyle.newAlphabeticButtonSwipeForegroundStyle(isDark, {
+        text: params.keyboard.t9BackspaceButton.params.swipeUpText,
+        center: { x: 0.5, y: t9BadgeY(isPortrait).top },
+        fontSize: fonts.iPhone.button.doubleLabelSmallFontSize,
+      }),
+  }
+  + createSwipeDownLabelForegroundStyle(isDark, params.keyboard.t9BackspaceButton, isPortrait)
   + basicStyle.newSystemButton(
     params.keyboard.t9RestInputButton.name,
     isDark,

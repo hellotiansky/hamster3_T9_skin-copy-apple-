@@ -111,7 +111,7 @@ local fonts = import 'Fonts.libsonnet';
 
     // 按键定义
     // 26 键上下滑：键面上方 / 下方的角标直接取自 swipeUpAction / swipeDownAction，
-    // 快捷指令用 swipeUpText / swipeDownText 指定角标文字，swipeDownSystemImageName 指定图标。
+    // 快捷指令用 swipeUpText / swipeDownText 指定角标文字（也可用 swipeDownSystemImageName 显示图标）。
     qButton: {
       name: 'qButton',
       params: {
@@ -185,7 +185,7 @@ local fonts = import 'Fonts.libsonnet';
         uppercasedStateAction: { symbol: 'O' },
         swipeUpAction: { symbol: '9' },
         swipeDownAction: 'tab',
-        swipeDownSystemImageName: 'arrow.right.to.line',
+        swipeDownText: 'Tab',
       },
     },
     pButton: {
@@ -481,9 +481,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '7' },
         swipeUpAction: { symbol: '7' },
-        // 下滑：清空
-        swipeDownAction: { shortcut: '#deleteText' },
-        swipeDownText: '清空',
+        // 下滑：换行
+        swipeDownAction: { shortcut: '#换行' },
+        swipeDownText: '换行',
         text: 'PQRS',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -493,9 +493,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '8' },
         swipeUpAction: { symbol: '8' },
-        // 下滑：撤销（撤回上一步编辑，如误清空）
-        swipeDownAction: { shortcut: '#undo' },
-        swipeDownText: '撤销',
+        // 下滑：剪切
+        swipeDownAction: { shortcut: '#cut' },
+        swipeDownText: '剪切',
         text: 'TUV',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -505,9 +505,9 @@ local fonts = import 'Fonts.libsonnet';
       params: {
         action: { character: '9' },
         swipeUpAction: { symbol: '9' },
-        // 下滑：换行
-        swipeDownAction: { shortcut: '#换行' },
-        swipeDownText: '换行',
+        // 下滑：Tab（键面下方显示文字 Tab，与 26 键 o 键一致）
+        swipeDownAction: 'tab',
+        swipeDownText: 'Tab',
         text: 'WXYZ',
         fontSize: fonts.t9ButtonTextFontSize,
       },
@@ -570,6 +570,21 @@ local fonts = import 'Fonts.libsonnet';
         repeatAction: 'backspace',
         systemImageName: 'delete.left',
         highlightSystemImageName: 'delete.left.fill',
+      },
+    },
+
+    // 九键专用删除键：上滑清空、下滑撤销（26 键、数字键盘仍用上面的 backspaceButton，不受影响）
+    t9BackspaceButton: {
+      name: 'backspaceButton',
+      params: {
+        action: 'backspace',
+        repeatAction: 'backspace',
+        systemImageName: 'delete.left',
+        highlightSystemImageName: 'delete.left.fill',
+        swipeUpAction: { shortcut: '#deleteText' },
+        swipeUpText: '清空',
+        swipeDownAction: { shortcut: '#undo' },
+        swipeDownText: '撤销',
       },
     },
 
