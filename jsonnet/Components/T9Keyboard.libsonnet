@@ -393,8 +393,8 @@ local t9TopArea(isDark=false, isPortrait=true) =
       backgroundStyle: t9PinyinDividerBackgroundStyleName,
     },
     [t9PinyinDividerBackgroundStyleName]: utils.newGeometryStyle({
-      normalColor: colors.labelColor.tertiary,
-      highlightColor: colors.labelColor.tertiary,
+      normalColor: colors.t9PinyinDividerColor,
+      highlightColor: colors.t9PinyinDividerColor,
     }, isDark),
     // 分隔线与候选词区域之间的透明间距
     [t9PinyinDividerSpacerName]: {
@@ -468,6 +468,44 @@ local t9TopArea(isDark=false, isPortrait=true) =
   + basicStyle.newT9PinyinCellStyles(isDark, pinyinFontSize);
 
 
+
+// 九键常态（没有输入拼音、还没有候选）时显示的工具栏：
+// 行结构、行高与打字时的横向候选完全相同，只是音节栏和候选词栏留空，
+// 这样分隔线在刚打开键盘时就常态显示（与 iOS 原生九键一致），开始打字后位置也不会跳动。
+// （只用于九键；数字键盘、26 键通过 topArea 复用顶部区域，常态工具栏保持空白）
+local t9IdleToolbarLayout = [
+  {
+    VStack: {
+      subviews: [
+        {
+          HStack: {
+            style: t9PinyinRowStyleName,
+            subviews: [{ Cell: t9PinyinDividerSpacerName }],
+          },
+        },
+        {
+          HStack: {
+            style: t9PinyinDividerRowStyleName,
+            subviews: [{ Cell: t9PinyinDividerName }],
+          },
+        },
+        {
+          HStack: {
+            style: t9PinyinDividerSpacerRowStyleName,
+            subviews: [{ Cell: t9PinyinDividerSpacerName }],
+          },
+        },
+        {
+          HStack: {
+            style: t9HorizontalCandidatesRowStyleName,
+            subviews: [{ Cell: t9PinyinDividerSpacerName }],
+          },
+        },
+      ],
+    },
+  },
+];
+
 {
   // 顶部区域，供数字键盘、26 键复用，保证三种键盘总高度一致
   topArea: t9TopArea,
@@ -480,6 +518,8 @@ local t9TopArea(isDark=false, isPortrait=true) =
         params.keyboard.button.backgroundInsets.iPhone.landscape;
 
     t9TopArea(isDark, isPortrait)
+    // 常态（未打字）也显示拼音栏与候选词栏之间的分隔线
+    + { toolbarLayout: t9IdleToolbarLayout }
     + basicStyle.newKeyboardBackgroundStyle(isDark)
     + basicStyle.newAlphabeticButtonBackgroundStyle(isDark, { insets: insets })
     + basicStyle.newAlphabeticButtonHintStyle(isDark)

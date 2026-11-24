@@ -142,9 +142,19 @@ local candidateForegroundColor = standardButtonForegroundColor;
 local candidateSeparatorColor = separatorColor;
 
 
+// 拼音栏与候选词栏之间的分隔线（取自 iOS 17.6 原生九键截图实测）：
+//  浅色：不透明 #8C8C8C（系统键盘底色 #D0D3D9 上）
+//  深色：黑色 70% 不透明（#000000B3），叠在毛玻璃背景上，整条线始终是背景亮度的 30%
+//  粗细：1 个物理像素（2 倍屏上即 0.5pt，与 dividerHeight 一致）
+local t9PinyinDividerColor = {
+  light: '#8C8C8C',
+  dark: '#000000B3',
+};
+
 {
   labelColor: labelColor,
   separatorColor: separatorColor,
+  t9PinyinDividerColor: t9PinyinDividerColor,
   keyboardBackgroundColor: keyboardBackgroundColor,
   standardButtonBackgroundColor: standardButtonBackgroundColor,
   standardButtonHighlightedBackgroundColor: standardButtonHighlightedBackgroundColor,
